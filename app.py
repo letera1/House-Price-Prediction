@@ -8,6 +8,7 @@ import joblib
 import pandas as pd
 import logging
 import sys
+from pydantic import BaseModel, Field, ValidationError
 
 # Ensure local modules can be imported
 BASE_DIR = Path(__file__).resolve().parent
@@ -16,7 +17,6 @@ sys.path.append(str(BASE_DIR))
 try:
     from preprocessing import FeatureEngineer
 except ImportError:
-    # This might happen if run from a different directory context
     pass
 
 # Configure logging
@@ -24,9 +24,20 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Consider restricting origins later
 
-# Global variables for artifacts
+# Input Validation Model (Pydantic V2 style)
+class HouseFeatures(BaseModel):
+    MedInc: float = Field(..., ge=0, description="Median Income in block group")
+    HouseAge: float = Field(..., ge=0, description="Median House Age in block group")
+    AveRooms: float = Field(..., ge=0, description="Average number of rooms per household")
+    AveOccup: float = Field(..., gt=0, description="Average number of household members")
+    Population: float = Field(..., ge=0, description="Block group population")
+    AveBedrms: float = Field(default=1.0, ge=0, description="Average number of bedrooms (optional)")
+    Latitude: float = Field(..., ge=32, le=42, description="Block group latitude")
+    Longitude: float = Field(..., ge=-125, le=-114, description="Block group longitude")
+
+# Global variables
 pipeline = None
 metadata = None
 
@@ -49,8 +60,19 @@ def load_artifacts():
     except Exception as e:
         logger.error(f"Failed to load artifacts: {e}", exc_info=True)
 
-# Load on startup
 load_artifacts()
+
+@app.errorhandler(ValidationError)
+def handle_validation_error(e):
+    return jsonify({'error': 'Validation Error', 'details': e.errors()}), 422
+
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify({'error': 'Bad Request', 'message': str(e)}), 400
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({'error': 'Internal Server Error', 'message': 'An unexpected error occurred'}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -64,33 +86,39 @@ def health():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """Prediction endpoint"""
+    """Prediction endpoint with validation"""
     if pipeline is None:
-        return jsonify({'error': 'Model not initialized. Please run training script first.'}), 503
+        return jsonify({'error': 'Model not initialized'}), 503
     
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No input data provided'}), 400
+        # Pydantic validation
+        # Pydantic V2 uses model_validate for dicts, or just init with kwargs
+        # Flask request.json returns a dict
+        input_data = HouseFeatures(**request.get_json())
         
-        # Convert dictionary to DataFrame
-        # The pipeline handles feature engineering and validation implicitly
-        input_df = pd.DataFrame([data])
+        # Convert to DataFrame
+        # model_dump() is V2, dict() is V1
+        data_dict = input_data.model_dump()
+        input_df = pd.DataFrame([data_dict])
         
-        # Generate prediction
-        prediction = pipeline.predict(input_df)
+        # Predict
+        prediction = pipeline.predict(input_df)[0]
         
-        # Return result
         return jsonify({
-            'prediction_value': float(prediction[0]),
+            'prediction_value': float(prediction),
             'currency': 'USD',
             'scale': '100,000s',
-            'input_received': data
+            'input_received': data_dict
         })
         
+    except ValidationError as e:
+        return jsonify({'error': 'Validation Error', 'details': e.errors()}), 422
+    except TypeError as e:
+         return jsonify({'error': 'Validation Error', 'details': str(e)}), 422
     except Exception as e:
         logger.error(f"Prediction error: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Prediction failed', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Only for local development
+    app.run(host='0.0.0.0', port=5000)
