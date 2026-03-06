@@ -158,8 +158,10 @@ House Price Prediction/
 │       └── metadata.pkl                   # Model metadata
 │
 ├── 🚀 start.bat                           # Windows startup script
-├── 📦 package.json                        # Root package config
-└── 📖 README.md                           # This file
+├── 🐚 start.sh                            # Linux/Mac startup script
+├── 📖 README.md                           # This file
+├── 🔒 .gitignore                          # Git ignore rules
+└── 📝 .gitattributes                      # Git attributes
 ```
 
 ## 🚀 Quick Start
