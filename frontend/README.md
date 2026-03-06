@@ -58,7 +58,7 @@ npm start
 Create a `.env.local` file in the frontend directory:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
 ## Project Structure

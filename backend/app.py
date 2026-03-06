@@ -121,4 +121,5 @@ def predict():
 
 if __name__ == '__main__':
     # Only for local development
-    app.run(host='0.0.0.0', port=5000)
+    # Using port 8080 to avoid Windows port 5000 restrictions
+    app.run(host='0.0.0.0', port=8080)
