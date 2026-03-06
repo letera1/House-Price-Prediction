@@ -1,54 +1,111 @@
-# House Price Predictor Frontend
+# House Price Predictor - Next.js Frontend
 
-A clean, modern web interface for the California House Price Prediction API.
+A modern Next.js 15 web application for predicting California house prices using machine learning.
 
 ## Features
 
+- Built with Next.js 15 (App Router)
+- TypeScript for type safety
 - Real-time API health monitoring
-- Form validation with helpful hints
-- Responsive design for mobile and desktop
-- Clean gradient UI with smooth animations
-- Error handling and user feedback
+- Responsive design
+- Client-side form validation
+- Modern gradient UI
 
-## Setup
+## Prerequisites
 
-1. Make sure the Flask API is running:
-   ```bash
-   cd ..
-   python app.py
-   ```
+- Node.js 18+ or 20+
+- npm or yarn or pnpm
 
-2. Open `index.html` in your browser, or serve it with a local server:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx serve
-   ```
+## Installation
 
-3. Visit `http://localhost:8000` (or just open index.html directly)
+```bash
+# Install dependencies
+npm install
 
-## Usage
+# or
+yarn install
 
-1. Fill in the house features:
-   - Median Income (block group)
-   - House Age (years)
-   - Average Rooms per household
-   - Average Bedrooms per household
-   - Population (block group)
-   - Average Occupancy (household members)
-   - Latitude (32-42 for California)
-   - Longitude (-125 to -114 for California)
+# or
+pnpm install
+```
 
-2. Click "Predict Price" to get the estimated house value
+## Running the Application
 
-## API Configuration
+### Development Mode
 
-The frontend connects to `http://localhost:5000` by default. To change this, edit the `API_URL` constant in `app.js`.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
 
-## Files
+Visit [http://localhost:3000](http://localhost:3000)
 
-- `index.html` - Main HTML structure
-- `style.css` - Styling and animations
-- `app.js` - API integration and form handling
+### Production Build
+
+```bash
+# Build
+npm run build
+
+# Start production server
+npm start
+```
+
+## Environment Variables
+
+Create a `.env.local` file in the frontend directory:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+## Project Structure
+
+```
+frontend/
+├── app/
+│   ├── layout.tsx       # Root layout
+│   ├── page.tsx         # Home page (prediction form)
+│   └── globals.css      # Global styles
+├── public/              # Static assets
+├── package.json         # Dependencies
+├── tsconfig.json        # TypeScript config
+├── next.config.ts       # Next.js config
+└── README.md
+```
+
+## API Integration
+
+The frontend connects to the Flask backend API at `http://localhost:5000` by default.
+
+Make sure the backend is running:
+```bash
+cd ../backend
+python app.py
+```
+
+## Technologies
+
+- Next.js 15
+- React 19
+- TypeScript 5
+- CSS3 (with CSS Modules support)
+
+## Development
+
+The app uses Next.js App Router with:
+- Server Components by default
+- Client Components for interactivity (`'use client'`)
+- TypeScript for type safety
+- Modern React 19 features
+
+## Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+The production build is optimized and ready for deployment to Vercel, Netlify, or any Node.js hosting platform.
