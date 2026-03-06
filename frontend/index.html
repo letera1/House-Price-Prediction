@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 California House Price Predictor</h1>
+            <p class="subtitle">Predict house prices based on location and features</p>
+        </header>
+
+        <div class="status" id="status">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="statusText">Checking API...</span>
+        </div>
+
+        <form id="predictionForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="MedInc">Median Income</label>
+                    <input type="number" id="MedInc" step="0.01" min="0" required>
+                    <small>Block group median income</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="HouseAge">House Age</label>
+                    <input type="number" id="HouseAge" step="1" min="0" required>
+                    <small>Median house age (years)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="AveRooms">Average Rooms</label>
+                    <input type="number" id="AveRooms" step="0.1" min="0" required>
+                    <small>Avg rooms per household</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="AveBedrms">Average Bedrooms</label>
+                    <input type="number" id="AveBedrms" step="0.1" min="0" value="1.0">
+                    <small>Avg bedrooms per household</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="Population">Population</label>
+                    <input type="number" id="Population" step="1" min="0" required>
+                    <small>Block group population</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="AveOccup">Average Occupancy</label>
+                    <input type="number" id="AveOccup" step="0.1" min="0.1" required>
+                    <small>Avg household members</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="Latitude">Latitude</label>
+                    <input type="number" id="Latitude" step="0.01" min="32" max="42" required>
+                    <small>32 to 42 (California)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="Longitude">Longitude</label>
+                    <input type="number" id="Longitude" step="0.01" min="-125" max="-114" required>
+                    <small>-125 to -114 (California)</small>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-predict" id="predictBtn">
+                Predict Price
+            </button>
+        </form>
+
+        <div id="result" class="result hidden">
+            <h2>Predicted Price</h2>
+            <div class="price" id="price"></div>
+            <div class="details" id="details"></div>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
