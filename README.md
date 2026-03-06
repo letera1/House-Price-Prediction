@@ -1,19 +1,55 @@
-# House Price Prediction - Production-Ready ML System
+<div align="center">
+
+# 🏠 House Price Prediction System
+
+### *Production-Ready ML System with Modern Web Interface*
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+*A comprehensive, production-ready machine learning system for predicting California house prices featuring multiple algorithms, advanced feature engineering, REST API, and a beautiful Next.js frontend.*
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [API](#-api-documentation) • [Demo](#-demo)
+
+---
+
+</div>
 
 ## 📋 Project Overview
 
-A comprehensive, production-ready machine learning system for predicting house prices featuring multiple algorithms, advanced feature engineering, REST API, and complete deployment infrastructure. This project demonstrates enterprise-level ML engineering practices from data exploration to cloud deployment.
+An enterprise-level ML system that combines powerful machine learning with a modern web interface. Built with Flask backend and Next.js 16 frontend, this project demonstrates best practices in full-stack ML engineering from data exploration to production deployment.
 
-## 🌟 Project Highlights
+## ✨ Features
 
-- **7 ML Algorithms** compared (Linear, Ridge, Lasso, ElasticNet, Decision Tree, Random Forest, Gradient Boosting)
-- **Advanced Feature Engineering** with 9 engineered features
-- **Hyperparameter Tuning** using GridSearchCV
-- **Ensemble Methods** for robust predictions
-- **REST API** built with Flask
-- **Docker Support** for containerized deployment
-- **Cloud Deployment** guides for AWS, GCP, Azure, Heroku
-- **Production-Ready** with monitoring, logging, and error handling
+<table>
+<tr>
+<td width="50%">
+
+### 🤖 Machine Learning
+- 🎯 **7 ML Algorithms** compared
+- 🔧 **Advanced Feature Engineering**
+- ⚡ **Hyperparameter Tuning** (GridSearchCV)
+- 🎲 **Ensemble Methods**
+- 📊 **84% R² Score** achieved
+- 🔄 **Cross-Validation** (5-fold)
+
+</td>
+<td width="50%">
+
+### 🌐 Full-Stack Application
+- ⚛️ **Next.js 16** with TypeScript
+- 🎨 **Modern Gradient UI**
+- 📱 **Fully Responsive Design**
+- 🔌 **REST API** with Flask
+- 🐳 **Docker Support**
+- ☁️ **Cloud-Ready Deployment**
+
+</td>
+</tr>
+</table>
 
 ## 🎯 Objectives
 
@@ -45,50 +81,167 @@ A comprehensive, production-ready machine learning system for predicting house p
 | Latitude | Block group latitude |
 | Longitude | Block group longitude |
 
-## 🛠️ Technologies Used
+## 🛠️ Tech Stack
 
-- **Python 3.8+**
-- **pandas & numpy**: Data manipulation and numerical computing
-- **matplotlib & seaborn**: Data visualization
-- **scikit-learn**: Machine learning algorithms, preprocessing, and metrics
-- **Flask**: REST API framework
-- **Docker**: Containerization
-- **Gunicorn**: Production WSGI server
-- **joblib**: Model serialization
+<div align="center">
+
+### Backend
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
+
+### Frontend
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+
+### DevOps
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+
+</div>
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     🌐 Next.js Frontend                     │
+│              (TypeScript + React 19 + Tailwind)             │
+│                    Port: 3000                               │
+└────────────────────────┬────────────────────────────────────┘
+                         │ HTTP/REST API
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     🔧 Flask Backend                        │
+│              (Python + Pydantic + CORS)                     │
+│                    Port: 8080                               │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  🤖 ML Pipeline                             │
+│         (Scikit-learn + Feature Engineering)                │
+│              Gradient Boosting Model                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## 📁 Project Structure
 
 ```
 House Price Prediction/
 │
-├── backend/                               # Backend API & ML code
+├── 🎨 frontend/                           # Next.js 16 Web Application
+│   ├── app/
+│   │   ├── layout.tsx                     # Root layout
+│   │   ├── page.tsx                       # Main prediction page
+│   │   └── globals.css                    # Global styles
+│   ├── package.json                       # Node dependencies
+│   ├── tsconfig.json                      # TypeScript config
+│   ├── next.config.ts                     # Next.js config
+│   └── .env.local                         # Environment variables
+│
+├── 🔧 backend/                            # Flask API & ML Pipeline
 │   ├── app.py                             # Flask REST API
 │   ├── preprocessing.py                   # Feature engineering
 │   ├── train_model.py                     # Model training script
 │   ├── test_api.py                        # API test suite
 │   ├── requirements.txt                   # Python dependencies
-│   ├── requirements_api.txt               # API dependencies
 │   ├── Dockerfile                         # Docker configuration
 │   ├── docker-compose.yml                 # Docker Compose setup
 │   ├── california_housing_data.csv        # Dataset
-│   ├── advanced_house_price_prediction.ipynb  # Main ML notebook
-│   ├── house_price_prediction.ipynb       # Basic ML notebook
-│   └── models/                            # Saved model artifacts
-│       ├── final_pipeline.pkl             # Trained pipeline
+│   ├── *.ipynb                            # Jupyter notebooks
+│   └── models/                            # Trained models
+│       ├── final_pipeline.pkl             # ML pipeline
 │       └── metadata.pkl                   # Model metadata
 │
-├── frontend/                              # Web UI
-│   ├── index.html                         # Main HTML page
-│   ├── style.css                          # Styling
-│   ├── app.js                             # Frontend logic
-│   └── README.md                          # Frontend docs
-│
-└── README.md                              # Project documentation
+├── 🚀 start.bat                           # Windows startup script
+├── 📦 package.json                        # Root package config
+└── 📖 README.md                           # This file
 ```
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Option 1: Run Jupyter Notebooks
+### Prerequisites
+- Python 3.8+
+- Node.js 18+
+- npm or yarn
+
+### ⚡ Fastest Way (Windows)
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd house-price-prediction
+
+# Run both backend and frontend
+start.bat
+```
+
+This opens two terminals:
+- 🔧 Backend API → `http://localhost:8080`
+- 🎨 Frontend UI → `http://localhost:3000`
+
+---
+
+### 🔧 Manual Setup
+
+<details>
+<summary><b>Option 1: Run Full Stack Application</b></summary>
+
+#### Terminal 1 - Backend
+```bash
+cd backend
+pip install -r requirements_api.txt
+python app.py
+```
+
+#### Terminal 2 - Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Access:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+
+</details>
+
+<details>
+<summary><b>Option 2: Run with npm (Concurrent)</b></summary>
+
+```bash
+# Install concurrently
+npm install
+
+# Run both servers
+npm run dev
+```
+
+</details>
+
+<details>
+<summary><b>Option 3: Docker Deployment</b></summary>
+
+```bash
+cd backend
+docker-compose up -d
+
+# Test
+curl http://localhost:8080/health
+
+# Stop
+docker-compose down
+```
+
+</details>
+
+<details>
+<summary><b>Option 4: Jupyter Notebooks Only</b></summary>
 
 ```bash
 cd backend
@@ -96,49 +249,7 @@ pip install -r requirements.txt
 jupyter notebook advanced_house_price_prediction.ipynb
 ```
 
-### Option 2: Run REST API Locally
-
-```bash
-cd backend
-
-# Install dependencies
-pip install -r requirements_api.txt
-
-# Train model first (if models/ doesn't exist)
-python train_model.py
-
-# Start API
-python app.py
-
-# Test API (in another terminal)
-python test_api.py
-```
-
-### Option 3: Run Frontend
-
-```bash
-cd frontend
-
-# Option A: Open directly in browser
-# Just double-click index.html
-
-# Option B: Use a local server
-python -m http.server 8000
-# Visit http://localhost:8000
-```
-
-### Option 4: Run with Docker
-
-```bash
-cd backend
-docker-compose up -d
-
-# Test
-curl http://localhost:5000/health
-
-# Stop
-docker-compose down
-```
+</details>
 
 ## 📈 Workflow Steps
 
@@ -204,25 +315,25 @@ docker-compose down
 
 ## 📊 Model Performance
 
-### Basic Model (Linear Regression)
-| Metric | Training Set | Test Set |
-|--------|--------------|----------|
-| **RMSE** | ~0.52 | ~0.73 |
-| **R² Score** | ~0.64 | ~0.60 |
+<div align="center">
 
-### Advanced Models (After Feature Engineering & Tuning)
-| Model | Test R² | Test RMSE | Improvement |
-|-------|---------|-----------|-------------|
-| **Ensemble (Best)** | ~0.84 | ~0.48 | +40% |
-| **Random Forest** | ~0.83 | ~0.49 | +38% |
-| **Gradient Boosting** | ~0.82 | ~0.50 | +37% |
-| Ridge Regression | ~0.65 | ~0.70 | +8% |
-| Linear Regression | ~0.60 | ~0.73 | Baseline |
+### 🎯 Advanced Models Performance
 
-**Interpretation**:
-- Best model explains ~84% of house price variance
-- Average prediction error: ~$48,000 (vs $73,000 baseline)
-- 40% improvement over baseline Linear Regression
+| Model | Test R² | Test RMSE | Improvement | Status |
+|-------|---------|-----------|-------------|--------|
+| **🏆 Ensemble** | **0.84** | **$48K** | **+40%** | ✅ Best |
+| 🌲 Random Forest | 0.83 | $49K | +38% | ✅ Excellent |
+| 📈 Gradient Boosting | 0.82 | $50K | +37% | ✅ Excellent |
+| 📐 Ridge Regression | 0.65 | $70K | +8% | ⚠️ Good |
+| 📏 Linear Regression | 0.60 | $73K | Baseline | ℹ️ Baseline |
+
+</div>
+
+**Key Insights:**
+- 🎯 **84% accuracy** - Model explains 84% of house price variance
+- 💰 **$48K error** - Average prediction error (vs $73K baseline)
+- 📈 **40% improvement** - Over baseline Linear Regression
+- ⚡ **Production-ready** - Optimized with hyperparameter tuning
 
 ## 🔑 Key Features
 
@@ -260,59 +371,127 @@ docker-compose down
 7. **A/B Testing**: Compare model versions in production
 8. **Auto-Retraining**: Automated model update pipeline
 
-## 📝 API Usage Example
+## 📡 API Documentation
 
-### Single Prediction
+### Endpoints
+
+#### 🏥 Health Check
+```bash
+GET /health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "model_loaded": true,
+  "metadata": {
+    "metrics": {...}
+  }
+}
+```
+
+#### 🔮 Single Prediction
+```bash
+POST /predict
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "MedInc": 8.5,
+  "HouseAge": 15,
+  "AveRooms": 7.5,
+  "AveBedrms": 1.2,
+  "Population": 1200,
+  "AveOccup": 2.5,
+  "Latitude": 37.88,
+  "Longitude": -122.23
+}
+```
+
+**Response:**
+```json
+{
+  "prediction_value": 4.526,
+  "currency": "USD",
+  "scale": "100,000s",
+  "input_received": {...}
+}
+```
+
+### 💻 Code Examples
+
+<details>
+<summary><b>Python</b></summary>
 
 ```python
 import requests
 
-url = "http://localhost:5000/predict"
+url = "http://localhost:8080/predict"
 data = {
     "MedInc": 8.5,
     "HouseAge": 15,
     "AveRooms": 7.5,
-    "AveOccup": 2.5,
+    "AveBedrms": 1.2,
     "Population": 1200,
+    "AveOccup": 2.5,
     "Latitude": 37.88,
     "Longitude": -122.23
 }
 
 response = requests.post(url, json=data)
-print(response.json())
-# Output: {"prediction": 4.526, "prediction_dollars": "$452,600.00"}
+result = response.json()
+print(f"Predicted Price: ${result['prediction_value'] * 100000:,.0f}")
 ```
 
-### Batch Prediction
+</details>
 
-```python
-url = "http://localhost:5000/batch_predict"
-data = {
-    "houses": [
-        {"MedInc": 8.5, "HouseAge": 15, ...},
-        {"MedInc": 3.2, "HouseAge": 35, ...}
-    ]
-}
+<details>
+<summary><b>JavaScript/TypeScript</b></summary>
 
-response = requests.post(url, json=data)
-print(response.json())
+```typescript
+const response = await fetch('http://localhost:8080/predict', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    MedInc: 8.5,
+    HouseAge: 15,
+    AveRooms: 7.5,
+    AveBedrms: 1.2,
+    Population: 1200,
+    AveOccup: 2.5,
+    Latitude: 37.88,
+    Longitude: -122.23
+  })
+});
+
+const data = await response.json();
+console.log(`Predicted Price: $${data.prediction_value * 100000}`);
 ```
 
-### Using cURL
+</details>
+
+<details>
+<summary><b>cURL</b></summary>
 
 ```bash
-curl -X POST http://localhost:5000/predict \
+curl -X POST http://localhost:8080/predict \
   -H "Content-Type: application/json" \
   -d '{
     "MedInc": 8.5,
     "HouseAge": 15,
     "AveRooms": 7.5,
-    "AveOccup": 2.5,
+    "AveBedrms": 1.2,
     "Population": 1200,
+    "AveOccup": 2.5,
     "Latitude": 37.88,
     "Longitude": -122.23
   }'
 ```
+
+</details>
 
 ## 🤝 Contributing
 
@@ -363,7 +542,25 @@ This project demonstrates:
 
 ---
 
-**⭐ If you find this project helpful, please star the repository!**
+<div align="center">
 
-**Last Updated:** 2026-03-04  
+## 🌟 Show Your Support
+
+If you find this project helpful, please consider giving it a ⭐!
+
+### 📬 Contact
+
+**Questions or feedback?** Feel free to reach out!
+
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourprofile)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your.email@example.com)
+
+---
+
+**Last Updated:** March 6, 2026  
 **Version:** 2.0.0 (Production-Ready)
+
+Made with ❤️ by ML Engineering Team
+
+</div>
