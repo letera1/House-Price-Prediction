@@ -1,10 +1,10 @@
 # House Price Predictor - Next.js Frontend
 
-A modern Next.js 15 web application for predicting California house prices using machine learning.
+A modern Next.js 16 web application for predicting California house prices using machine learning.
 
 ## Features
 
-- Built with Next.js 15 (App Router)
+- Built with Next.js 16 (App Router)
 - TypeScript for type safety
 - Real-time API health monitoring
 - Responsive design
@@ -88,7 +88,7 @@ python app.py
 
 ## Technologies
 
-- Next.js 15
+- Next.js 16
 - React 19
 - TypeScript 5
 - CSS3 (with CSS Modules support)
