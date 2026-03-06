@@ -61,41 +61,37 @@ A comprehensive, production-ready machine learning system for predicting house p
 ```
 House Price Prediction/
 │
-├── advanced_house_price_prediction.ipynb  # Main ML notebook (production)
-├── house_price_prediction.ipynb           # Basic ML notebook (learning)
-├── california_housing_data.csv            # Dataset
-├── download_data.py                       # Data download script
+├── backend/                               # Backend API & ML code
+│   ├── app.py                             # Flask REST API
+│   ├── preprocessing.py                   # Feature engineering
+│   ├── train_model.py                     # Model training script
+│   ├── test_api.py                        # API test suite
+│   ├── requirements.txt                   # Python dependencies
+│   ├── requirements_api.txt               # API dependencies
+│   ├── Dockerfile                         # Docker configuration
+│   ├── docker-compose.yml                 # Docker Compose setup
+│   ├── california_housing_data.csv        # Dataset
+│   ├── advanced_house_price_prediction.ipynb  # Main ML notebook
+│   ├── house_price_prediction.ipynb       # Basic ML notebook
+│   └── models/                            # Saved model artifacts
+│       ├── final_pipeline.pkl             # Trained pipeline
+│       └── metadata.pkl                   # Model metadata
 │
-├── app.py                                 # Flask REST API
-├── test_api.py                            # API test suite
-├── requirements.txt                       # Notebook dependencies
-├── requirements_api.txt                   # API dependencies
+├── frontend/                              # Web UI
+│   ├── index.html                         # Main HTML page
+│   ├── style.css                          # Styling
+│   ├── app.js                             # Frontend logic
+│   └── README.md                          # Frontend docs
 │
-├── Dockerfile                             # Docker configuration
-├── docker-compose.yml                     # Docker Compose setup
-│
-├── models/                                # Saved model artifacts
-│   ├── final_model.pkl                    # Trained model
-│   ├── scaler.pkl                         # Feature scaler
-│   ├── feature_names.pkl                  # Feature list
-│   └── metadata.pkl                       # Model metadata
-│
-├── README.md                              # Project documentation
-└── DEPLOYMENT.md                          # Deployment guide
+└── README.md                              # Project documentation
 ```
 
 ## 🚀 Getting Started
 
 ### Option 1: Run Jupyter Notebooks
 
-**Basic Version (Learning):**
 ```bash
-pip install -r requirements.txt
-jupyter notebook house_price_prediction.ipynb
-```
-
-**Advanced Version (Production):**
-```bash
+cd backend
 pip install -r requirements.txt
 jupyter notebook advanced_house_price_prediction.ipynb
 ```
@@ -103,11 +99,13 @@ jupyter notebook advanced_house_price_prediction.ipynb
 ### Option 2: Run REST API Locally
 
 ```bash
+cd backend
+
 # Install dependencies
 pip install -r requirements_api.txt
 
 # Train model first (if models/ doesn't exist)
-jupyter nbconvert --to notebook --execute advanced_house_price_prediction.ipynb
+python train_model.py
 
 # Start API
 python app.py
@@ -116,10 +114,23 @@ python app.py
 python test_api.py
 ```
 
-### Option 3: Run with Docker
+### Option 3: Run Frontend
 
 ```bash
-# Build and run
+cd frontend
+
+# Option A: Open directly in browser
+# Just double-click index.html
+
+# Option B: Use a local server
+python -m http.server 8000
+# Visit http://localhost:8000
+```
+
+### Option 4: Run with Docker
+
+```bash
+cd backend
 docker-compose up -d
 
 # Test
@@ -128,10 +139,6 @@ curl http://localhost:5000/health
 # Stop
 docker-compose down
 ```
-
-### Option 4: Deploy to Cloud
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed cloud deployment guides (AWS, GCP, Azure, Heroku).
 
 ## 📈 Workflow Steps
 
