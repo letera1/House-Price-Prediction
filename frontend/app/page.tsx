@@ -176,13 +176,14 @@ export default function HousePricePredictor() {
     <div className="app-container">
       {/* Sidebar */}
       <aside className="sidebar">
-        <button className="sidebar-icon" style={{ marginBottom: '20px' }}>
+        <button className="sidebar-icon sidebar-logo">
           <HomeIcon size={24} />
         </button>
         
         <button 
           className={`sidebar-icon ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('dashboard')}
+          title="Dashboard"
         >
           <BarChart3 size={22} />
         </button>
@@ -190,6 +191,7 @@ export default function HousePricePredictor() {
         <button 
           className={`sidebar-icon ${activeTab === 'predict' ? 'active' : ''}`}
           onClick={() => setActiveTab('predict')}
+          title="Predict"
         >
           <Sparkles size={22} />
         </button>
@@ -197,6 +199,7 @@ export default function HousePricePredictor() {
         <button 
           className={`sidebar-icon ${activeTab === 'history' ? 'active' : ''}`}
           onClick={() => setActiveTab('history')}
+          title="History"
         >
           <History size={22} />
         </button>
@@ -204,13 +207,19 @@ export default function HousePricePredictor() {
         <button 
           className={`sidebar-icon ${activeTab === 'insights' ? 'active' : ''}`}
           onClick={() => setActiveTab('insights')}
+          title="Insights"
         >
           <TrendingUp size={22} />
         </button>
         
         <div className="sidebar-divider" />
         
-        <button className="sidebar-icon" onClick={toggleTheme} style={{ marginTop: 'auto' }}>
+        <button 
+          className="sidebar-icon" 
+          onClick={toggleTheme} 
+          style={{ marginTop: 'auto' }}
+          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        >
           {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
         </button>
       </aside>
@@ -301,7 +310,12 @@ export default function HousePricePredictor() {
 
               {/* Feature Cards */}
               <div className="grid-2">
-                <div className="feature-card card-gradient" onClick={() => setActiveTab('predict')}>
+                <motion.div 
+                  className="feature-card card-gradient" 
+                  onClick={() => setActiveTab('predict')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <div className="feature-icon icon-purple">
                     <Sparkles size={32} />
                   </div>
@@ -316,13 +330,23 @@ export default function HousePricePredictor() {
                         <span className="progress-value" style={{ color: 'white' }}>84%</span>
                       </div>
                       <div className="progress-bar" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                        <div className="progress-fill" style={{ width: '84%', background: 'rgba(255,255,255,0.8)' }} />
+                        <motion.div 
+                          className="progress-fill" 
+                          style={{ background: 'rgba(255,255,255,0.8)' }}
+                          initial={{ width: 0 }}
+                          animate={{ width: '84%' }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="feature-card card-pink">
+                <motion.div 
+                  className="feature-card card-pink"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <div className="feature-icon icon-pink">
                     <TrendingUp size={32} />
                   </div>
@@ -337,89 +361,65 @@ export default function HousePricePredictor() {
                         <span className="progress-value" style={{ color: 'white' }}>748 hr</span>
                       </div>
                       <div className="progress-bar" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                        <div className="progress-fill" style={{ width: '60%', background: 'rgba(255,255,255,0.8)' }} />
+                        <motion.div 
+                          className="progress-fill" 
+                          style={{ background: 'rgba(255,255,255,0.8)' }}
+                          initial={{ width: 0 }}
+                          animate={{ width: '60%' }}
+                          transition={{ duration: 1, delay: 0.7 }}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Stats Grid */}
               <div className="grid-3" style={{ marginTop: '24px' }}>
-                <div className="card">
-                  <div className="feature-icon icon-purple" style={{ marginBottom: '16px' }}>
-                    <Activity size={28} />
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>
-                    Model Performance
-                  </h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                    15 km / month
-                  </p>
-                  <div className="progress-container">
-                    <div className="progress-header">
-                      <span className="progress-label">Progress</span>
-                      <span className="progress-value">45%</span>
+                {[
+                  { icon: Activity, title: 'Model Performance', subtitle: '15 km / month', progress: 45, days: '2 days left', color: 'purple' },
+                  { icon: BarChart3, title: 'Predictions Made', subtitle: `${history.length} total predictions`, progress: 13, days: '17 days left', color: 'blue' },
+                  { icon: CheckCircle, title: 'Accuracy Rate', subtitle: '84% model accuracy', progress: 60, days: '3 days left', color: 'purple' },
+                ].map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    className="card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 + 0.3 }}
+                    whileHover={{ y: -8 }}
+                  >
+                    <div className={`feature-icon icon-${stat.color}`} style={{ marginBottom: '16px' }}>
+                      <stat.icon size={28} />
                     </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '45%' }} />
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>
+                      {stat.title}
+                    </h3>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                      {stat.subtitle}
+                    </p>
+                    <div className="progress-container">
+                      <div className="progress-header">
+                        <span className="progress-label">Progress</span>
+                        <span className="progress-value">{stat.progress}%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <motion.div 
+                          className="progress-fill"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${stat.progress}%` }}
+                          transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <span>0 / 30km</span>
-                    <span className="badge badge-error" style={{ fontSize: '0.75rem' }}>2 days left</span>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="feature-icon icon-blue" style={{ marginBottom: '16px' }}>
-                    <BarChart3 size={28} />
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>
-                    Predictions Made
-                  </h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                    {history.length} total predictions
-                  </p>
-                  <div className="progress-container">
-                    <div className="progress-header">
-                      <span className="progress-label">Progress</span>
-                      <span className="progress-value">13%</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <span>{index === 0 ? '0 / 30km' : index === 1 ? '2 / 15km' : '3200/ 4800 steps'}</span>
+                      <span className={`badge ${index === 0 ? 'badge-error' : index === 1 ? 'badge-warning' : 'badge-success'}`} style={{ fontSize: '0.75rem' }}>
+                        {stat.days}
+                      </span>
                     </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '13%' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <span>2 / 15km</span>
-                    <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>17 days left</span>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="feature-icon icon-purple" style={{ marginBottom: '16px' }}>
-                    <CheckCircle size={28} />
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>
-                    Accuracy Rate
-                  </h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                    84% model accuracy
-                  </p>
-                  <div className="progress-container">
-                    <div className="progress-header">
-                      <span className="progress-label">Progress</span>
-                      <span className="progress-value">60%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '60%' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <span>3200/ 4800 steps</span>
-                    <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>3 days left</span>
-                  </div>
-                </div>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           )}
