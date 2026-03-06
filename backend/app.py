@@ -96,10 +96,16 @@ def predict():
         # Flask request.json returns a dict
         input_data = HouseFeatures(**request.get_json())
         
-        # Convert to DataFrame
+        # Convert to DataFrame with correct column order
         # model_dump() is V2, dict() is V1
         data_dict = input_data.model_dump()
-        input_df = pd.DataFrame([data_dict])
+        
+        # Ensure correct feature order from metadata
+        feature_order = metadata.get('input_features', [
+            'MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 
+            'Population', 'AveOccup', 'Latitude', 'Longitude'
+        ])
+        input_df = pd.DataFrame([data_dict])[feature_order]
         
         # Predict
         prediction = pipeline.predict(input_df)[0]
