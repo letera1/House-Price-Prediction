@@ -98,4 +98,4 @@ Feel free to open an issue for any questions or clarifications!
 
 ---
 
-**Thank you for contributing!** 🙏
+**Thank you for contributing!** 
