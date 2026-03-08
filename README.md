@@ -563,6 +563,6 @@ If you find this project helpful, please consider giving it a ⭐!
 **Last Updated:** March 6, 2026  
 **Version:** 2.0.0 (Production-Ready)
 
-Made with ❤️ by ML Engineering Team
+Made by Letera
 
 </div>
