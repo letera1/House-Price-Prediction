@@ -6,7 +6,7 @@ with open("../README.md", "r", encoding="utf-8") as fh:
 setup(
     name="house-price-prediction",
     version="2.0.0",
-    author="ML Engineering Team",
+    author="Letera Tujo",
     author_email="your.email@example.com",
     description="Production-ready ML system for house price prediction",
     long_description=long_description,
@@ -36,8 +36,6 @@ setup(
     ],
     extras_require={
         "dev": [
-            "pytest>=7.4.0",
-            "pytest-cov>=4.1.0",
             "black>=23.0.0",
             "flake8>=6.0.0",
             "mypy>=1.4.0",
