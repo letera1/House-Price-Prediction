@@ -43,7 +43,7 @@ export default function AppHeader({ title, subtitle }: AppHeaderProps) {
       <div className="header-meta">
         <h1>
           <span>{title}</span>
-          <span style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '6px', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', border: '1px solid var(--accent-emerald-border)' }}>
+          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', border: '1px solid var(--accent-emerald-border)', fontWeight: 600 }}>
             v2.0.0
           </span>
         </h1>
@@ -58,17 +58,17 @@ export default function AppHeader({ title, subtitle }: AppHeaderProps) {
         >
           {apiStatus === 'healthy' ? (
             <>
-              <CheckCircle size={14} />
+              <CheckCircle size={13} />
               <span>Model Online (8080)</span>
             </>
           ) : apiStatus === 'error' ? (
             <>
-              <XCircle size={14} />
+              <XCircle size={13} />
               <span>API Disconnected</span>
             </>
           ) : (
             <>
-              <Loader size={14} className="spinner" />
+              <Loader size={13} className="spinner" />
               <span>Verifying API</span>
             </>
           )}
@@ -79,7 +79,7 @@ export default function AppHeader({ title, subtitle }: AppHeaderProps) {
           className={`dev-toggle-btn ${isDevPage ? 'active' : ''}`}
           title={isDevPage ? 'Back to Predictor' : 'Open Developer Inspector'}
         >
-          <Terminal size={14} />
+          <Terminal size={13} />
           <span>{isDevPage ? 'Predictor' : 'Dev Inspector'}</span>
         </Link>
       </div>

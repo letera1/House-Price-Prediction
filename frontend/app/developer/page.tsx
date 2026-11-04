@@ -99,7 +99,7 @@ export default function DeveloperPage() {
             <div className="card-title-row">
               <div>
                 <h2 className="card-title">
-                  <Terminal size={18} style={{ color: 'var(--accent-blue)' }} />
+                  <Terminal size={14} style={{ color: 'var(--accent-blue)' }} />
                   <span>Terminal cURL Generator</span>
                 </h2>
                 <p className="card-caption">Copy-pasteable command configured with current payload</p>
@@ -166,7 +166,7 @@ export default function DeveloperPage() {
             <div className="card-title-row">
               <div>
                 <h2 className="card-title">
-                  <Activity size={18} style={{ color: 'var(--accent-emerald)' }} />
+                  <Activity size={14} style={{ color: 'var(--accent-emerald)' }} />
                   <span>Response Telemetry</span>
                 </h2>
                 <p className="card-caption">Live inference latency and payload feedback</p>

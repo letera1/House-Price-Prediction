@@ -41,11 +41,11 @@ export default function AppSidebar() {
   return (
     <aside className="app-sidebar" aria-label="Application Navigation">
       <Link href="/predict" className="brand-badge" title="PropVal AI - Home" aria-label="PropVal AI Home">
-        <Building size={24} />
+        <Building size={18} />
       </Link>
 
       <nav className="nav-cluster" aria-label="Main Navigation">
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {navItems.map((item) => {
             const active = isActive(item.href);
             const IconComponent = item.icon;
@@ -58,7 +58,7 @@ export default function AppSidebar() {
                   aria-label={item.label}
                   aria-current={active ? 'page' : undefined}
                 >
-                  <IconComponent size={20} />
+                  <IconComponent size={16} />
                 </Link>
               </li>
             );
@@ -74,7 +74,7 @@ export default function AppSidebar() {
           title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Charcoal Dark'}
           aria-label={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Charcoal Dark'}
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
     </aside>
