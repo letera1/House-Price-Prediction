@@ -10,6 +10,14 @@ venv/
 env/
 .venv
 .ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
 
 # ===================================
 # Node.js / Frontend
@@ -17,8 +25,8 @@ env/
 node_modules/
 /.next/
 /out/
-.next
-out
+.next/
+out/
 *.tsbuildinfo
 next-env.d.ts
 
