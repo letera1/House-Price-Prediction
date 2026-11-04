@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import AppSidebar from '../components/AppSidebar';
 
 export const metadata: Metadata = {
   title: 'PropVal AI | California House Price Valuation Engine',
@@ -24,7 +25,17 @@ export default function RootLayout({
       <head>
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body>{children}</body>
+      <body>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <div className="app-shell">
+          <AppSidebar />
+          <main id="main-content" className="app-main" tabIndex={-1}>
+            {children}
+          </main>
+        </div>
+      </body>
     </html>
   );
 }
