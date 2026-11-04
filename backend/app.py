@@ -1,13 +1,14 @@
 """
-Modern Flask REST API for House Price Prediction
+Production Flask REST API for House Price Prediction
 """
 from pathlib import Path
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import os
+import sys
+import logging
 import joblib
 import pandas as pd
-import logging
-import sys
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from pydantic import BaseModel, Field, ValidationError
 
 # Ensure local modules can be imported
@@ -24,9 +25,17 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Consider restricting origins later
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max payload
+CORS(app)
 
-# Input Validation Model (Pydantic V2 style)
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
+
+# Input Validation Model (Pydantic V2)
 class HouseFeatures(BaseModel):
     MedInc: float = Field(..., ge=0, description="Median Income in block group")
     HouseAge: float = Field(..., ge=0, description="Median House Age in block group")
@@ -37,7 +46,7 @@ class HouseFeatures(BaseModel):
     Latitude: float = Field(..., ge=32, le=42, description="Block group latitude")
     Longitude: float = Field(..., ge=-125, le=-114, description="Block group longitude")
 
-# Global variables
+# Global artifacts
 pipeline = None
 metadata = None
 
@@ -56,7 +65,7 @@ def load_artifacts():
             
         if metadata_path.exists():
             metadata = joblib.load(metadata_path)
-            logger.info(f"✓ Metadata loaded")
+            logger.info(f"✓ Metadata loaded from {metadata_path}")
     except Exception as e:
         logger.error(f"Failed to load artifacts: {e}", exc_info=True)
 
@@ -85,19 +94,17 @@ def health():
     })
 
 @app.route('/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST'])
 def predict():
-    """Prediction endpoint with validation"""
+    """Prediction endpoint with validation (supports /predict and /api/predict)"""
     if pipeline is None:
         return jsonify({'error': 'Model not initialized'}), 503
     
     try:
-        # Pydantic validation
-        # Pydantic V2 uses model_validate for dicts, or just init with kwargs
-        # Flask request.json returns a dict
+        if not request.is_json:
+            return jsonify({'error': 'Bad Request', 'message': 'JSON payload required'}), 400
+
         input_data = HouseFeatures(**request.get_json())
-        
-        # Convert to DataFrame with correct column order
-        # model_dump() is V2, dict() is V1
         data_dict = input_data.model_dump()
         
         # Ensure correct feature order from metadata
@@ -107,7 +114,6 @@ def predict():
         ])
         input_df = pd.DataFrame([data_dict])[feature_order]
         
-        # Predict
         prediction = pipeline.predict(input_df)[0]
         
         return jsonify({
@@ -120,12 +126,11 @@ def predict():
     except ValidationError as e:
         return jsonify({'error': 'Validation Error', 'details': e.errors()}), 422
     except TypeError as e:
-         return jsonify({'error': 'Validation Error', 'details': str(e)}), 422
+        return jsonify({'error': 'Validation Error', 'details': str(e)}), 422
     except Exception as e:
         logger.error(f"Prediction error: {e}", exc_info=True)
         return jsonify({'error': 'Prediction failed', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    # Only for local development
-    # Using port 8080 to avoid Windows port 5000 restrictions
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)

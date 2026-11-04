@@ -1,5 +1,5 @@
 /**
- * Secure API Client
+ * API Client for House Price Prediction API
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -20,14 +20,13 @@ interface PredictionResponse {
   prediction_value: number;
   currency: string;
   scale: string;
-  request_id?: string;
-  timestamp?: string;
+  input_received?: Record<string, number>;
 }
 
 interface HealthResponse {
   status: string;
   model_loaded: boolean;
-  timestamp?: string;
+  metadata?: Record<string, any>;
 }
 
 class APIClient {
@@ -47,7 +46,7 @@ class APIClient {
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
+      ...(this.apiKey ? { 'X-API-Key': this.apiKey } : {}),
       ...options.headers,
     };
 
@@ -79,7 +78,7 @@ class APIClient {
   }
 
   async predict(data: PredictionRequest): Promise<PredictionResponse> {
-    return this.request<PredictionResponse>('/api/predict', {
+    return this.request<PredictionResponse>('/predict', {
       method: 'POST',
       body: JSON.stringify(data),
     });
