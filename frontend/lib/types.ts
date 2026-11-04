@@ -23,27 +23,38 @@ export interface ValuationRecord {
   inputs: PropertyForm;
 }
 
+export interface GeospatialRegion {
+  name: string;
+  submarket: string;
+  coastalZone: boolean;
+  densityTier: 'High' | 'Medium' | 'Low';
+}
+
 export const ARCHETYPES = [
   {
-    name: 'Bay Area Suburban',
+    name: 'Bay Area',
+    subTitle: 'East Bay Suburban',
     tag: 'Popular',
     desc: 'Contemporary family home near East Bay tech hubs',
     data: { MedInc: 8.5, HouseAge: 18, AveRooms: 6.8, AveBedrms: 1.1, Population: 1400, AveOccup: 2.7, Latitude: 37.85, Longitude: -122.25 }
   },
   {
-    name: 'Silicon Valley Executive',
+    name: 'Silicon Valley',
+    subTitle: 'Palo Alto Prime',
     tag: 'Prime',
     desc: 'High-income estate in Palo Alto / Cupertino corridor',
     data: { MedInc: 12.4, HouseAge: 14, AveRooms: 8.2, AveBedrms: 1.2, Population: 950, AveOccup: 2.5, Latitude: 37.42, Longitude: -122.14 }
   },
   {
-    name: 'SoCal Coastal Retreat',
+    name: 'SoCal Coastal',
+    subTitle: 'Newport Beach Area',
     tag: 'Coastal',
     desc: 'Scenic seaside residence near Newport Beach',
     data: { MedInc: 9.6, HouseAge: 25, AveRooms: 7.2, AveBedrms: 1.2, Population: 1100, AveOccup: 2.6, Latitude: 33.65, Longitude: -117.88 }
   },
   {
-    name: 'Central Valley Starter',
+    name: 'Central Valley',
+    subTitle: 'Fresno Starter',
     tag: 'Affordable',
     desc: 'Established starter residence in suburban Fresno',
     data: { MedInc: 3.6, HouseAge: 28, AveRooms: 5.2, AveBedrms: 1.0, Population: 2100, AveOccup: 3.3, Latitude: 36.75, Longitude: -119.78 }
@@ -67,3 +78,44 @@ export const MARKET_TRENDS = [
   { incomeTier: '$100k - $130k', avgPrice: 465, sampleCount: 520 },
   { incomeTier: '$130k+', avgPrice: 530, sampleCount: 280 },
 ];
+
+/**
+ * Intelligent Geospatial Region Resolver
+ * Maps continuous California coordinates to standard metropolitan census submarkets.
+ */
+export function resolveGeospatialRegion(lat: number, lon: number): GeospatialRegion {
+  const coastalZone = lon <= -121.0;
+
+  // San Francisco Bay Area & Silicon Valley
+  if (lat >= 36.8 && lat <= 38.8 && lon >= -123.0 && lon <= -121.5) {
+    if (lat < 37.5) {
+      return { name: 'Silicon Valley', submarket: 'South Bay & Peninsula Corridor', coastalZone, densityTier: 'High' };
+    }
+    return { name: 'San Francisco Bay Area', submarket: 'East Bay & Coastal Metro', coastalZone: true, densityTier: 'High' };
+  }
+
+  // Southern California: Los Angeles & Orange County
+  if (lat >= 33.3 && lat <= 34.8 && lon >= -119.0 && lon <= -116.8) {
+    if (lat < 33.85 && lon > -118.1) {
+      return { name: 'Orange County', submarket: 'Coastal South & Irvine Basin', coastalZone: true, densityTier: 'High' };
+    }
+    return { name: 'Greater Los Angeles', submarket: 'LA Basin & San Fernando Valley', coastalZone, densityTier: 'High' };
+  }
+
+  // San Diego Metro
+  if (lat >= 32.5 && lat < 33.3 && lon >= -117.6 && lon <= -116.8) {
+    return { name: 'San Diego County', submarket: 'Coastal Metro & North County', coastalZone: true, densityTier: 'High' };
+  }
+
+  // Sacramento Capital Region
+  if (lat >= 38.3 && lat <= 39.2 && lon >= -121.8 && lon <= -120.8) {
+    return { name: 'Sacramento Metro', submarket: 'Capital Region & Central Valley North', coastalZone: false, densityTier: 'Medium' };
+  }
+
+  // Central Valley / Inland Empire
+  if (lon > -121.0 && lat >= 35.0 && lat <= 38.2) {
+    return { name: 'Central Valley Basin', submarket: 'Fresno, Bakersfield & San Joaquin Valley', coastalZone: false, densityTier: 'Medium' };
+  }
+
+  return { name: 'California Regional', submarket: 'Northern / Inland Territory', coastalZone, densityTier: 'Low' };
+}

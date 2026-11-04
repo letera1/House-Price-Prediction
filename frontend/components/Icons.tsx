@@ -22,6 +22,7 @@ export {
   Terminal,
   Copy,
   Check,
+  CheckCheck,
   Sliders,
   Gauge,
   Shield,
@@ -33,5 +34,12 @@ export {
   ArrowRight,
   ExternalLink,
   ChevronRight,
-  Info
+  Info,
+  Zap,
+  Share2,
+  Printer,
+  RotateCcw,
+  Compass,
+  FileText,
+  Wrench
 } from 'lucide-react';

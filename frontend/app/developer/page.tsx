@@ -92,9 +92,9 @@ export default function DeveloperPage() {
         subtitle="Real-Time Machine Learning Pipeline Debugging & Endpoint Health"
       />
 
-      <div className="grid-cols-12">
+      <div className="developer-container">
         {/* Left Column: Interactive API Console & cURL */}
-        <div className="col-span-6">
+        <div>
           <div className="clean-card">
             <div className="card-title-row">
               <div>
@@ -161,7 +161,7 @@ export default function DeveloperPage() {
         </div>
 
         {/* Right Column: Response Payload & Model Telemetry */}
-        <div className="col-span-6">
+        <div>
           <div className="clean-card">
             <div className="card-title-row">
               <div>

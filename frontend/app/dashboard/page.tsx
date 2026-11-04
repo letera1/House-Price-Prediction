@@ -86,9 +86,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid-cols-12">
+      <div className="dashboard-container">
         {/* Main Chart: Income Tier vs Market Price Curve */}
-        <div className="col-span-8">
+        <div>
           <div className="clean-card">
             <div className="card-title-row">
               <div>
@@ -173,7 +173,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column: Feature Weights & Quick Action */}
-        <div className="col-span-4">
+        <div>
           <div className="clean-card">
             <h3 className="card-title" style={{ marginBottom: '16px', fontSize: '1rem' }}>
               <Layers size={16} style={{ color: 'var(--accent-blue)' }} />
