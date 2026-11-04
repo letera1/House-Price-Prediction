@@ -9,6 +9,7 @@
 [![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 *A comprehensive, production-ready machine learning system for predicting California house prices featuring multiple algorithms, advanced feature engineering, REST API, and a beautiful Next.js frontend.*
 
@@ -141,25 +142,43 @@ House Price Prediction/
 │   ├── package.json                       # Node dependencies
 │   ├── tsconfig.json                      # TypeScript config
 │   ├── next.config.ts                     # Next.js config
-│   └── .env.local                         # Environment variables
+│   ├── .env.local                         # Environment variables
+│   ├── .env.local.example                 # Environment template
+│   └── README.md                          # Frontend documentation
 │
 ├── 🔧 backend/                            # Flask API & ML Pipeline
 │   ├── app.py                             # Flask REST API
 │   ├── preprocessing.py                   # Feature engineering
 │   ├── train_model.py                     # Model training script
 │   ├── test_api.py                        # API test suite
+│   ├── setup.py                           # Package configuration
+│   ├── pytest.ini                         # Test configuration
 │   ├── requirements.txt                   # Python dependencies
 │   ├── Dockerfile                         # Docker configuration
 │   ├── docker-compose.yml                 # Docker Compose setup
+│   ├── .env.example                       # Environment template
+│   ├── .dockerignore                      # Docker ignore rules
 │   ├── california_housing_data.csv        # Dataset
 │   ├── *.ipynb                            # Jupyter notebooks
+│   ├── tests/                             # Test suite
+│   │   ├── __init__.py
+│   │   ├── test_api.py                    # API tests
+│   │   └── test_preprocessing.py          # Preprocessing tests
 │   └── models/                            # Trained models
 │       ├── final_pipeline.pkl             # ML pipeline
 │       └── metadata.pkl                   # Model metadata
 │
+├── � .github/                            # GitHub configuration
+│   └── workflows/
+│       └── ci.yml                         # CI/CD pipeline
+│
 ├── 🚀 start.bat                           # Windows startup script
 ├── 🐚 start.sh                            # Linux/Mac startup script
 ├── 📖 README.md                           # This file
+├── 📝 CHANGELOG.md                        # Version history
+├── 🤝 CONTRIBUTING.md                     # Contribution guidelines
+├── 🔒 SECURITY.md                         # Security policy
+├── ⚖️ LICENSE                             # MIT License
 ├── 🔒 .gitignore                          # Git ignore rules
 └── 📝 .gitattributes                      # Git attributes
 ```
@@ -476,8 +495,58 @@ console.log(`Predicted Price: $${data.prediction_value * 100000}`);
 </details>
 
 <details>
-<summary><b>cURL</b></summary>
+## 🤝 Contributing
 
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Quick Start for Contributors
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📄 Documentation
+
+- [📖 README](README.md) - Project overview and setup
+- [📝 CHANGELOG](CHANGELOG.md) - Version history
+- [🤝 CONTRIBUTING](CONTRIBUTING.md) - Contribution guidelines
+- [🔒 SECURITY](SECURITY.md) - Security policy
+- [⚖️ LICENSE](LICENSE) - MIT License
+- [🎨 Frontend README](frontend/README.md) - Frontend documentation
+
+---b></summary>
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd backend
+pip install pytest pytest-cov
+pytest --cov=. --cov-report=html
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+### Run All Tests
+```bash
+# Backend
+cd backend && pytest
+
+# Frontend
+cd frontend && npm run lint && npm run build
+```
+
+---
 ```bash
 curl -X POST http://localhost:8080/predict \
   -H "Content-Type: application/json" \
@@ -563,6 +632,6 @@ If you find this project helpful, please consider giving it a ⭐!
 **Last Updated:** March 6, 2026  
 **Version:** 2.0.0 (Production-Ready)
 
-Made with ❤️ by ML Engineering Team
+Made by Letera Tujo
 
 </div>
