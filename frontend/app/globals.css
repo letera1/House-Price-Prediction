@@ -137,11 +137,136 @@ body {
   }
 }
 
-/* Layout Core */
-.app-shell {
-  display: flex;
-  min-height: 100vh;
+/* Predict Clean Workspace */
+.predict-container {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
   width: 100%;
+}
+
+@media (max-width: 960px) {
+  .predict-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.preset-segmented {
+  display: flex;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+  margin-bottom: 12px;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.preset-tab {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.preset-tab:hover {
+  color: var(--text-main);
+}
+
+.preset-tab.active {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.compact-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .compact-matrix {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compact-cell {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.compact-cell:focus-within {
+  border-color: var(--border-active);
+}
+
+.compact-cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.compact-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.compact-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0 5px;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics-strip-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.metric-tile {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.metric-tile-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric-tile-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Slim Compact Sidebar (Supabase Style: 52px width) */

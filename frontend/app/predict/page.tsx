@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import AppHeader from '../../components/AppHeader';
 import { 
-  HomeIcon, TrendingUp, MapPin, Users, Calendar, 
-  Bed, DoorOpen, Loader, Sparkles, Sliders, Gauge,
-  Shield, DollarSign, Building, Layers, ArrowRight, XCircle 
+  Loader, Sparkles, Shield, ArrowRight, XCircle, Sliders 
 } from '../../components/Icons';
 import { PropertyForm, ValuationResponse, ValuationRecord, ARCHETYPES } from '../../lib/types';
 
@@ -18,8 +16,8 @@ function PredictContent() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeArchetype, setActiveArchetype] = useState<number>(0);
 
-  // Initialize form with defaults or URL query parameters
   const [form, setForm] = useState<PropertyForm>({
     MedInc: 8.5,
     HouseAge: 18,
@@ -32,42 +30,36 @@ function PredictContent() {
   });
 
   const [prediction, setPrediction] = useState<ValuationResponse | null>({
-    prediction_value: 4.125,
+    prediction_value: 3.55823,
     currency: 'USD',
     scale: '100,000s',
   });
 
   useEffect(() => {
-    // Read from search params if present
     const pMedInc = searchParams.get('MedInc');
-    const pHouseAge = searchParams.get('HouseAge');
-    const pAveRooms = searchParams.get('AveRooms');
-    const pAveBedrms = searchParams.get('AveBedrms');
-    const pPopulation = searchParams.get('Population');
-    const pAveOccup = searchParams.get('AveOccup');
-    const pLatitude = searchParams.get('Latitude');
-    const pLongitude = searchParams.get('Longitude');
-
     if (pMedInc) {
       setForm({
         MedInc: parseFloat(pMedInc) || 8.5,
-        HouseAge: parseInt(pHouseAge || '18') || 18,
-        AveRooms: parseFloat(pAveRooms || '6.8') || 6.8,
-        AveBedrms: parseFloat(pAveBedrms || '1.1') || 1.1,
-        Population: parseInt(pPopulation || '1400') || 1400,
-        AveOccup: parseFloat(pAveOccup || '2.7') || 2.7,
-        Latitude: parseFloat(pLatitude || '37.85') || 37.85,
-        Longitude: parseFloat(pLongitude || '-122.25') || -122.25,
+        HouseAge: parseInt(searchParams.get('HouseAge') || '18') || 18,
+        AveRooms: parseFloat(searchParams.get('AveRooms') || '6.8') || 6.8,
+        AveBedrms: parseFloat(searchParams.get('AveBedrms') || '1.1') || 1.1,
+        Population: parseInt(searchParams.get('Population') || '1400') || 1400,
+        AveOccup: parseFloat(searchParams.get('AveOccup') || '2.7') || 2.7,
+        Latitude: parseFloat(searchParams.get('Latitude') || '37.85') || 37.85,
+        Longitude: parseFloat(searchParams.get('Longitude') || '-122.25') || -122.25,
       });
+      setActiveArchetype(-1);
     }
   }, [searchParams]);
 
   const handleFieldChange = (field: keyof PropertyForm, value: number) => {
     setForm(prev => ({ ...prev, [field]: value }));
+    setActiveArchetype(-1);
   };
 
-  const applyArchetype = (preset: typeof ARCHETYPES[0]) => {
-    setForm(preset.data);
+  const applyArchetype = (index: number) => {
+    setActiveArchetype(index);
+    setForm(ARCHETYPES[index].data);
   };
 
   const saveHistoryRecord = (predVal: number, inputs: PropertyForm) => {
@@ -104,18 +96,17 @@ function PredictContent() {
         setPrediction(data);
         saveHistoryRecord(data.prediction_value, form);
       } else {
-        setError(data.error || data.message || 'Valuation calculation was rejected by server');
+        setError(data.error || data.message || 'Calculation rejected by server');
       }
     } catch {
-      setError('Prediction API connection failed. Ensure backend service is running on http://localhost:8080.');
+      setError('Cannot reach prediction API. Check http://localhost:8080.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculations for Mock-up Scales & Metrics
   const priceUSD = useMemo(() => {
-    return prediction ? Math.round(prediction.prediction_value * 100000) : 412500;
+    return prediction ? Math.round(prediction.prediction_value * 100000) : 355823;
   }, [prediction]);
 
   const lowEstimateUSD = Math.round(priceUSD * 0.88);
@@ -149,410 +140,287 @@ function PredictContent() {
   return (
     <>
       <AppHeader 
-        title="Precision Property Valuation"
-        subtitle="California Census Block Group Residential Appraisal Engine"
+        title="House Price Predictor"
+        subtitle="California Census Block Group Valuation Model"
       />
 
-      {/* KPI Real Estate Metrics Strip */}
-      <div className="kpi-strip">
-        <div className="kpi-unit">
-          <div className="kpi-header">
-            <span>Fair Market Valuation</span>
-            <DollarSign size={16} style={{ color: 'var(--accent-emerald)' }} />
-          </div>
-          <div className="kpi-number" style={{ color: 'var(--accent-emerald)' }}>
-            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceUSD)}
-          </div>
-          <div className="kpi-footer">
-            <span style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>Spread:</span>
-            <span>${(lowEstimateUSD / 1000).toFixed(0)}k - ${(highEstimateUSD / 1000).toFixed(0)}k</span>
-          </div>
-        </div>
-
-        <div className="kpi-unit">
-          <div className="kpi-header">
-            <span>Est. Monthly Payment</span>
-            <Building size={16} style={{ color: 'var(--accent-blue)' }} />
-          </div>
-          <div className="kpi-number">
-            ${estimatedMortgage.toLocaleString()}
-          </div>
-          <div className="kpi-footer">
-            <span>30yr Fixed (6.75% + Tax)</span>
-          </div>
-        </div>
-
-        <div className="kpi-unit">
-          <div className="kpi-header">
-            <span>Price / Room Metric</span>
-            <DoorOpen size={16} style={{ color: 'var(--accent-amber)' }} />
-          </div>
-          <div className="kpi-number">
-            ${pricePerRoom.toLocaleString()}
-          </div>
-          <div className="kpi-footer">
-            <span>Across {form.AveRooms.toFixed(1)} average rooms</span>
-          </div>
-        </div>
-
-        <div className="kpi-unit">
-          <div className="kpi-header">
-            <span>Affordability Index</span>
-            <Gauge size={16} style={{ color: '#8b5cf6' }} />
-          </div>
-          <div className="kpi-number">
-            {affordabilityRatio}x
-          </div>
-          <div className="kpi-footer">
-            <span>Income-to-Price Multiplier</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid-cols-12">
+      <div className="predict-container">
         {/* Left Column: Form & Attribute Configuration */}
-        <div className="col-span-7">
-          <div className="clean-card">
-            <div className="card-title-row">
-              <div>
-                <h2 className="card-title">
-                  <Sliders size={18} style={{ color: 'var(--accent-emerald)' }} />
-                  <span>Property Attributes</span>
-                </h2>
-                <p className="card-caption">Fine-tune census block group features to estimate market price</p>
+        <div className="clean-card">
+          <div className="card-title-row" style={{ marginBottom: '10px' }}>
+            <h2 className="card-title">
+              <Sliders size={15} style={{ color: 'var(--accent-emerald)' }} />
+              <span>Property Features</span>
+            </h2>
+          </div>
+
+          {/* Minimalist Segmented Archetype Tabs */}
+          <div className="preset-segmented" role="tablist" aria-label="Quick Archetype Presets">
+            {ARCHETYPES.map((arch, i) => (
+              <button
+                key={i}
+                type="button"
+                role="tab"
+                aria-selected={activeArchetype === i}
+                className={`preset-tab ${activeArchetype === i ? 'active' : ''}`}
+                onClick={() => applyArchetype(i)}
+              >
+                {arch.name}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleValuationSubmit}>
+            <div className="compact-matrix">
+              {/* MedInc */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-medinc" className="compact-label">Median Income</label>
+                  <span className="compact-badge">${(form.MedInc * 10).toFixed(0)}k/yr</span>
+                </div>
+                <input 
+                  id="field-medinc"
+                  type="range" 
+                  min="1" 
+                  max="15" 
+                  step="0.1"
+                  value={form.MedInc} 
+                  onChange={(e) => handleFieldChange('MedInc', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* HouseAge */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-houseage" className="compact-label">House Age</label>
+                  <span className="compact-badge">{form.HouseAge} yrs</span>
+                </div>
+                <input 
+                  id="field-houseage"
+                  type="range" 
+                  min="1" 
+                  max="52" 
+                  step="1"
+                  value={form.HouseAge} 
+                  onChange={(e) => handleFieldChange('HouseAge', parseInt(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* AveRooms */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-averooms" className="compact-label">Average Rooms</label>
+                  <span className="compact-badge">{form.AveRooms.toFixed(1)}</span>
+                </div>
+                <input 
+                  id="field-averooms"
+                  type="range" 
+                  min="2" 
+                  max="12" 
+                  step="0.1"
+                  value={form.AveRooms} 
+                  onChange={(e) => handleFieldChange('AveRooms', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* AveBedrms */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-avebedrms" className="compact-label">Bedrooms</label>
+                  <span className="compact-badge">{form.AveBedrms.toFixed(1)}</span>
+                </div>
+                <input 
+                  id="field-avebedrms"
+                  type="range" 
+                  min="0.5" 
+                  max="4" 
+                  step="0.1"
+                  value={form.AveBedrms} 
+                  onChange={(e) => handleFieldChange('AveBedrms', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* Population */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-population" className="compact-label">Population</label>
+                  <span className="compact-badge">{form.Population}</span>
+                </div>
+                <input 
+                  id="field-population"
+                  type="range" 
+                  min="100" 
+                  max="6000" 
+                  step="50"
+                  value={form.Population} 
+                  onChange={(e) => handleFieldChange('Population', parseInt(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* AveOccup */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-aveoccup" className="compact-label">Occupancy</label>
+                  <span className="compact-badge">{form.AveOccup.toFixed(1)} / hse</span>
+                </div>
+                <input 
+                  id="field-aveoccup"
+                  type="range" 
+                  min="1" 
+                  max="6" 
+                  step="0.1"
+                  value={form.AveOccup} 
+                  onChange={(e) => handleFieldChange('AveOccup', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* Latitude */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-latitude" className="compact-label">Latitude</label>
+                  <span className="compact-badge">{form.Latitude.toFixed(2)}° N</span>
+                </div>
+                <input 
+                  id="field-latitude"
+                  type="range" 
+                  min="32.5" 
+                  max="42.0" 
+                  step="0.05"
+                  value={form.Latitude} 
+                  onChange={(e) => handleFieldChange('Latitude', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
+              </div>
+
+              {/* Longitude */}
+              <div className="compact-cell">
+                <div className="compact-cell-header">
+                  <label htmlFor="field-longitude" className="compact-label">Longitude</label>
+                  <span className="compact-badge">{form.Longitude.toFixed(2)}° W</span>
+                </div>
+                <input 
+                  id="field-longitude"
+                  type="range" 
+                  min="-124.5" 
+                  max="-114.5" 
+                  step="0.05"
+                  value={form.Longitude} 
+                  onChange={(e) => handleFieldChange('Longitude', parseFloat(e.target.value))}
+                  className="range-slider"
+                />
               </div>
             </div>
 
-            {/* Archetype Quick Selection Strip */}
-            <div style={{ marginBottom: '10px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Quick Archetype Presets:
+            <div style={{ marginTop: '14px' }}>
+              <button 
+                type="submit" 
+                className="btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader size={14} className="spinner" />
+                    <span>Calculating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} />
+                    <span>Predict Valuation</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {error && (
+            <div style={{ marginTop: '12px', padding: '8px 12px', borderRadius: '6px', background: 'var(--accent-rose-light)', border: '1px solid var(--accent-rose)', color: 'var(--accent-rose)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <XCircle size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Streamlined Single Valuation Card */}
+        <div className="clean-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div className="card-title-row" style={{ marginBottom: '8px' }}>
+              <span className="card-title" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Estimated Market Value
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                Random Forest
               </span>
             </div>
-            <div className="archetype-strip">
-              {ARCHETYPES.map((arch, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className="archetype-btn"
-                  onClick={() => applyArchetype(arch)}
-                >
-                  <span>{arch.name}</span>
-                  <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '10px', background: 'var(--bg-pill)', color: 'var(--text-muted)' }}>
-                    {arch.tag}
-                  </span>
-                </button>
-              ))}
-            </div>
 
-            <form onSubmit={handleValuationSubmit}>
-              <div className="input-matrix">
-                {/* MedInc */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-medinc" className="field-label">
-                      <TrendingUp size={14} style={{ color: 'var(--accent-emerald)' }} />
-                      <span>Median Income</span>
-                    </label>
-                    <span className="field-value-badge">${(form.MedInc * 10).toFixed(0)}k/yr</span>
-                  </div>
-                  <input 
-                    id="field-medinc"
-                    type="range" 
-                    min="1" 
-                    max="15" 
-                    step="0.1"
-                    value={form.MedInc} 
-                    onChange={(e) => handleFieldChange('MedInc', parseFloat(e.target.value))}
-                    className="range-slider"
-                    aria-valuemin={1}
-                    aria-valuemax={15}
-                    aria-valuenow={form.MedInc}
-                  />
-                </div>
-
-                {/* HouseAge */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-houseage" className="field-label">
-                      <Calendar size={14} style={{ color: 'var(--accent-blue)' }} />
-                      <span>Structure Age</span>
-                    </label>
-                    <span className="field-value-badge">{form.HouseAge} yrs</span>
-                  </div>
-                  <input 
-                    id="field-houseage"
-                    type="range" 
-                    min="1" 
-                    max="52" 
-                    step="1"
-                    value={form.HouseAge} 
-                    onChange={(e) => handleFieldChange('HouseAge', parseInt(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* AveRooms */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-averooms" className="field-label">
-                      <DoorOpen size={14} style={{ color: 'var(--accent-amber)' }} />
-                      <span>Avg Total Rooms</span>
-                    </label>
-                    <span className="field-value-badge">{form.AveRooms.toFixed(1)}</span>
-                  </div>
-                  <input 
-                    id="field-averooms"
-                    type="range" 
-                    min="2" 
-                    max="12" 
-                    step="0.1"
-                    value={form.AveRooms} 
-                    onChange={(e) => handleFieldChange('AveRooms', parseFloat(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* AveBedrms */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-avebedrms" className="field-label">
-                      <Bed size={14} style={{ color: '#ec4899' }} />
-                      <span>Avg Bedrooms</span>
-                    </label>
-                    <span className="field-value-badge">{form.AveBedrms.toFixed(1)}</span>
-                  </div>
-                  <input 
-                    id="field-avebedrms"
-                    type="range" 
-                    min="0.5" 
-                    max="4" 
-                    step="0.1"
-                    value={form.AveBedrms} 
-                    onChange={(e) => handleFieldChange('AveBedrms', parseFloat(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* Population */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-population" className="field-label">
-                      <Users size={14} style={{ color: '#8b5cf6' }} />
-                      <span>Block Population</span>
-                    </label>
-                    <span className="field-value-badge">{form.Population}</span>
-                  </div>
-                  <input 
-                    id="field-population"
-                    type="range" 
-                    min="100" 
-                    max="6000" 
-                    step="50"
-                    value={form.Population} 
-                    onChange={(e) => handleFieldChange('Population', parseInt(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* AveOccup */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-aveoccup" className="field-label">
-                      <HomeIcon size={14} style={{ color: '#06b6d4' }} />
-                      <span>Avg Occupancy</span>
-                    </label>
-                    <span className="field-value-badge">{form.AveOccup.toFixed(1)}/hse</span>
-                  </div>
-                  <input 
-                    id="field-aveoccup"
-                    type="range" 
-                    min="1" 
-                    max="6" 
-                    step="0.1"
-                    value={form.AveOccup} 
-                    onChange={(e) => handleFieldChange('AveOccup', parseFloat(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* Latitude */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-latitude" className="field-label">
-                      <MapPin size={14} style={{ color: '#ef4444' }} />
-                      <span>Latitude (N)</span>
-                    </label>
-                    <span className="field-value-badge">{form.Latitude.toFixed(2)}°</span>
-                  </div>
-                  <input 
-                    id="field-latitude"
-                    type="range" 
-                    min="32.5" 
-                    max="42.0" 
-                    step="0.05"
-                    value={form.Latitude} 
-                    onChange={(e) => handleFieldChange('Latitude', parseFloat(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-
-                {/* Longitude */}
-                <div className="field-cell">
-                  <div className="field-top-row">
-                    <label htmlFor="field-longitude" className="field-label">
-                      <MapPin size={14} style={{ color: '#ef4444' }} />
-                      <span>Longitude (W)</span>
-                    </label>
-                    <span className="field-value-badge">{form.Longitude.toFixed(2)}°</span>
-                  </div>
-                  <input 
-                    id="field-longitude"
-                    type="range" 
-                    min="-124.5" 
-                    max="-114.5" 
-                    step="0.05"
-                    value={form.Longitude} 
-                    onChange={(e) => handleFieldChange('Longitude', parseFloat(e.target.value))}
-                    className="range-slider"
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginTop: '24px' }}>
-                <button 
-                  type="submit" 
-                  className="btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader size={18} className="spinner" />
-                      <span>Running Random Forest Regressor...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={18} />
-                      <span>Calculate Estimated Valuation</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-
-            {error && (
-              <div style={{ marginTop: '16px', padding: '12px 16px', borderRadius: '10px', background: 'var(--accent-rose-light)', border: '1px solid var(--accent-rose)', color: 'var(--accent-rose)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <XCircle size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Primary Hero & Mock-up Scales */}
-        <div className="col-span-5">
-          <div className="valuation-hero">
-            <span className="valuation-label">Algorithmic Valuation</span>
-            <div className="valuation-amount">
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-emerald)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
               {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceUSD)}
             </div>
-            <div className="valuation-subline">
-              <Shield size={16} style={{ color: 'var(--accent-emerald)' }} />
-              <span>±$48K Confidence Interval (84% R² Cross-Validated)</span>
-            </div>
-          </div>
 
-          {/* UX Mock-up Scale 1: Market Valuation Spread Scale */}
-          <div className="scale-wrapper">
-            <div className="scale-header">
-              <span className="scale-title">
-                <Gauge size={16} style={{ color: 'var(--accent-emerald)' }} />
-                <span>Valuation Spread & Benchmark Scale</span>
-              </span>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
-                {scalePercentage}% of Scale
-              </span>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Shield size={12} style={{ color: 'var(--accent-emerald)' }} />
+              <span>Range: ${(lowEstimateUSD / 1000).toFixed(0)}k – ${(highEstimateUSD / 1000).toFixed(0)}k (±$48K spread)</span>
             </div>
 
-            <div className="scale-track">
-              <div 
-                className="scale-pin"
-                style={{ left: `${scalePercentage}%` }}
-                title={`Current Estimated Value: $${(priceUSD / 1000).toFixed(0)}k`}
-              />
-            </div>
-
-            <div className="scale-markers">
-              <span>$80K (Suburban Low)</span>
-              <span>$400K (Median)</span>
-              <span>$800K+ (Prime Tier)</span>
-            </div>
-          </div>
-
-          {/* UX Mock-up Scale 2: Underwriting Affordability & Density */}
-          <div className="clean-card" style={{ marginTop: '20px' }}>
-            <div className="card-title-row" style={{ marginBottom: '14px' }}>
-              <h3 className="card-title" style={{ fontSize: '0.95rem' }}>
-                <Layers size={16} style={{ color: 'var(--accent-blue)' }} />
-                <span>Underwriting Risk & Density Gauges</span>
-              </h3>
-            </div>
-
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Affordability Ratio</span>
-                <span style={{ fontWeight: 700, color: parseFloat(affordabilityRatio) > 6 ? 'var(--accent-rose)' : 'var(--accent-emerald)' }}>
-                  {affordabilityRatio}x Annual Income
-                </span>
+            {/* Clean Valuation Benchmark Meter */}
+            <div style={{ margin: '14px 0 6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                <span>Scale Position</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{scalePercentage}%</span>
               </div>
-              <div style={{ height: '6px', background: 'var(--bg-pill)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div className="scale-track" style={{ margin: '4px 0' }}>
                 <div 
-                  style={{ 
-                    height: '100%', 
-                    width: `${Math.min(parseFloat(affordabilityRatio) * 10, 100)}%`,
-                    backgroundColor: parseFloat(affordabilityRatio) > 6 ? 'var(--accent-rose)' : 'var(--accent-emerald)',
-                    borderRadius: '3px'
-                  }} 
+                  className="scale-pin"
+                  style={{ left: `${scalePercentage}%` }}
                 />
               </div>
+              <div className="scale-markers" style={{ fontSize: '10px' }}>
+                <span>$80K</span>
+                <span>$400K</span>
+                <span>$800K+</span>
+              </div>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Room-to-Occupant Ratio</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                  {(form.AveRooms / form.AveOccup).toFixed(2)} rooms/person
-                </span>
+            {/* Clean 3-Tile Metrics Row */}
+            <div className="metrics-strip-3">
+              <div className="metric-tile">
+                <div className="metric-tile-title">Est. Monthly</div>
+                <div className="metric-tile-value">${estimatedMortgage.toLocaleString()}</div>
               </div>
-              <div style={{ height: '6px', background: 'var(--bg-pill)', borderRadius: '3px', overflow: 'hidden' }}>
-                <div 
-                  style={{ 
-                    height: '100%', 
-                    width: `${Math.min((form.AveRooms / form.AveOccup) * 28, 100)}%`,
-                    backgroundColor: 'var(--accent-blue)',
-                    borderRadius: '3px'
-                  }} 
-                />
+
+              <div className="metric-tile">
+                <div className="metric-tile-title">Price / Room</div>
+                <div className="metric-tile-value">${pricePerRoom.toLocaleString()}</div>
+              </div>
+
+              <div className="metric-tile">
+                <div className="metric-tile-title">Income Ratio</div>
+                <div className="metric-tile-value">{affordabilityRatio}x</div>
               </div>
             </div>
           </div>
 
-          {/* Links to Dedicated Sub-Pages */}
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          {/* Quick Sub-Links */}
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '10px', marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Link
               href="/dashboard"
-              style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+              style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
             >
-              <span>View Market Trends</span>
-              <ArrowRight size={12} />
+              <span>Market Trends</span>
+              <ArrowRight size={11} />
             </Link>
 
             <Link
               href="/developer"
-              style={{ color: 'var(--accent-blue)', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 600 }}
+              style={{ color: 'var(--accent-blue)', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 500 }}
             >
-              <span>Inspect API & cURL</span>
-              <ArrowRight size={12} />
+              <span>API Inspector</span>
+              <ArrowRight size={11} />
             </Link>
           </div>
         </div>
@@ -563,7 +431,7 @@ function PredictContent() {
 
 export default function PredictPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: 'center', padding: '60px' }}><Loader size={32} className="spinner" /></div>}>
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: '40px' }}><Loader size={20} className="spinner" /></div>}>
       <PredictContent />
     </Suspense>
   );
