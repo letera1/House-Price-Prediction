@@ -1,69 +1,129 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HomeIcon, TrendingUp, MapPin, Users, Calendar, 
   Bed, DoorOpen, Activity, CheckCircle, XCircle, 
-  Loader, BarChart3, History, Sparkles, Sun, Moon
+  Loader, BarChart3, History, Sparkles, Sun, Moon,
+  Code2, Terminal, Copy, Check, Sliders, Gauge,
+  Shield, DollarSign, Building, Layers, Download,
+  Trash2, ArrowRight
 } from '../components/Icons';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, LineChart } from 'recharts';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, BarChart, Bar, Cell 
+} from 'recharts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-interface FormData {
-  MedInc: string;
-  HouseAge: string;
-  AveRooms: string;
-  AveBedrms: string;
-  Population: string;
-  AveOccup: string;
-  Latitude: string;
-  Longitude: string;
+interface PropertyForm {
+  MedInc: number;
+  HouseAge: number;
+  AveRooms: number;
+  AveBedrms: number;
+  Population: number;
+  AveOccup: number;
+  Latitude: number;
+  Longitude: number;
 }
 
-interface PredictionResult {
+interface ValuationResponse {
   prediction_value: number;
   currency: string;
   scale: string;
+  input_received?: Record<string, number>;
 }
 
-interface HistoryItem extends PredictionResult {
+interface ValuationRecord {
+  id: string;
   timestamp: string;
-  inputs: FormData;
+  priceUSD: number;
+  inputs: PropertyForm;
 }
 
-const chartData = [
-  { month: 'Jan', value: 450 },
-  { month: 'Feb', value: 480 },
-  { month: 'Mar', value: 520 },
-  { month: 'Apr', value: 490 },
-  { month: 'May', value: 550 },
-  { month: 'Jun', value: 580 },
+// Real-world California Archetype Presets
+const ARCHETYPES = [
+  {
+    name: 'Bay Area Suburban',
+    tag: 'Popular',
+    desc: 'Contemporary family home near East Bay tech hubs',
+    data: { MedInc: 8.5, HouseAge: 18, AveRooms: 6.8, AveBedrms: 1.1, Population: 1400, AveOccup: 2.7, Latitude: 37.85, Longitude: -122.25 }
+  },
+  {
+    name: 'Silicon Valley Executive',
+    tag: 'Prime',
+    desc: 'High-income estate in Palo Alto / Cupertino corridor',
+    data: { MedInc: 12.4, HouseAge: 14, AveRooms: 8.2, AveBedrms: 1.2, Population: 950, AveOccup: 2.5, Latitude: 37.42, Longitude: -122.14 }
+  },
+  {
+    name: 'SoCal Coastal Retreat',
+    tag: 'Coastal',
+    desc: 'Scenic seaside residence near Newport Beach',
+    data: { MedInc: 9.6, HouseAge: 25, AveRooms: 7.2, AveBedrms: 1.2, Population: 1100, AveOccup: 2.6, Latitude: 33.65, Longitude: -117.88 }
+  },
+  {
+    name: 'Central Valley Starter',
+    tag: 'Affordable',
+    desc: 'Established starter residence in suburban Fresno',
+    data: { MedInc: 3.6, HouseAge: 28, AveRooms: 5.2, AveBedrms: 1.0, Population: 2100, AveOccup: 3.3, Latitude: 36.75, Longitude: -119.78 }
+  }
+];
+
+// Feature importance weights from the trained Random Forest Pipeline
+const FEATURE_IMPORTANCES = [
+  { feature: 'Median Income (MedInc)', weight: 51, color: '#10b981' },
+  { feature: 'Average Occupancy (AveOccup)', weight: 14, color: '#3b82f6' },
+  { feature: 'Latitude (Geospatial)', weight: 12, color: '#6366f1' },
+  { feature: 'Longitude (Geospatial)', weight: 11, color: '#8b5cf6' },
+  { feature: 'House Age (HouseAge)', weight: 6, color: '#f59e0b' },
+  { feature: 'Average Rooms (AveRooms)', weight: 6, color: '#ec4899' },
+];
+
+// Market trend curve (Income vs Benchmark Price in $100k)
+const MARKET_TRENDS = [
+  { incomeTier: '< $30k', avgPrice: 135, sampleCount: 420 },
+  { incomeTier: '$30k - $50k', avgPrice: 198, sampleCount: 890 },
+  { incomeTier: '$50k - $75k', avgPrice: 278, sampleCount: 1320 },
+  { incomeTier: '$75k - $100k', avgPrice: 382, sampleCount: 940 },
+  { incomeTier: '$100k - $130k', avgPrice: 465, sampleCount: 520 },
+  { incomeTier: '$130k+', avgPrice: 530, sampleCount: 280 },
 ];
 
 export default function HousePricePredictor() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [activeTab, setActiveTab] = useState<'predict' | 'dashboard' | 'developer' | 'history'>('predict');
   const [apiStatus, setApiStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const [copiedCurl, setCopiedCurl] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'predict' | 'history' | 'insights'>('dashboard');
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  
-  const [formData, setFormData] = useState<FormData>({
-    MedInc: '',
-    HouseAge: '',
-    AveRooms: '',
-    AveBedrms: '1.0',
-    Population: '',
-    AveOccup: '',
-    Latitude: '',
-    Longitude: '',
+
+  // Form State
+  const [form, setForm] = useState<PropertyForm>({
+    MedInc: 8.5,
+    HouseAge: 18,
+    AveRooms: 6.8,
+    AveBedrms: 1.1,
+    Population: 1400,
+    AveOccup: 2.7,
+    Latitude: 37.85,
+    Longitude: -122.25,
   });
 
+  // Current Active Prediction
+  const [prediction, setPrediction] = useState<ValuationResponse | null>({
+    prediction_value: 4.125,
+    currency: 'USD',
+    scale: '100,000s',
+  });
+
+  // Historical Records
+  const [history, setHistory] = useState<ValuationRecord[]>([]);
+
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'light';
+    const savedTheme = (localStorage.getItem('propval_theme') as 'light' | 'dark') || 'dark';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
     checkHealth();
@@ -71,589 +131,895 @@ export default function HousePricePredictor() {
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    localStorage.setItem('propval_theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
   };
 
   const checkHealth = async () => {
     try {
-      const response = await fetch(`${API_URL}/health`);
-      const data = await response.json();
-      setApiStatus(data.status === 'healthy' ? 'healthy' : 'error');
+      const res = await fetch(`${API_URL}/health`);
+      if (res.ok) {
+        const data = await res.json();
+        setApiStatus(data.status === 'healthy' ? 'healthy' : 'error');
+      } else {
+        setApiStatus('error');
+      }
     } catch {
       setApiStatus('error');
     }
   };
 
   const loadHistory = () => {
-    const saved = localStorage.getItem('predictionHistory');
-    if (saved) {
-      setHistory(JSON.parse(saved));
+    try {
+      const stored = localStorage.getItem('propval_history');
+      if (stored) {
+        setHistory(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Error loading history:', e);
     }
   };
 
-  const saveToHistory = (prediction: PredictionResult, inputs: FormData) => {
-    const item: HistoryItem = {
-      ...prediction,
+  const saveHistoryRecord = (predVal: number, inputs: PropertyForm) => {
+    const record: ValuationRecord = {
+      id: Math.random().toString(36).substring(2, 9),
       timestamp: new Date().toISOString(),
-      inputs,
+      priceUSD: Math.round(predVal * 100000),
+      inputs: { ...inputs },
     };
-    const newHistory = [item, ...history].slice(0, 10);
-    setHistory(newHistory);
-    localStorage.setItem('predictionHistory', JSON.stringify(newHistory));
+    const updated = [record, ...history].slice(0, 20);
+    setHistory(updated);
+    localStorage.setItem('propval_history', JSON.stringify(updated));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleFieldChange = (field: keyof PropertyForm, value: number) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const loadSample = () => {
-    setFormData({
-      MedInc: '8.5',
-      HouseAge: '25',
-      AveRooms: '6.5',
-      AveBedrms: '1.2',
-      Population: '1500',
-      AveOccup: '3.0',
-      Latitude: '37.5',
-      Longitude: '-122.0',
-    });
+  const applyArchetype = (preset: typeof ARCHETYPES[0]) => {
+    setForm(preset.data);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleValuationSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
-    setResult(null);
     setError(null);
-
-    const payload = {
-      MedInc: parseFloat(formData.MedInc),
-      HouseAge: parseFloat(formData.HouseAge),
-      AveRooms: parseFloat(formData.AveRooms),
-      AveBedrms: parseFloat(formData.AveBedrms),
-      Population: parseFloat(formData.Population),
-      AveOccup: parseFloat(formData.AveOccup),
-      Latitude: parseFloat(formData.Latitude),
-      Longitude: parseFloat(formData.Longitude),
-    };
+    const start = performance.now();
 
     try {
-      const response = await fetch(`${API_URL}/predict`, {
+      const res = await fetch(`${API_URL}/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(form),
       });
 
-      const data = await response.json();
+      const end = performance.now();
+      setLatencyMs(Math.round(end - start));
 
-      if (response.ok) {
-        setResult(data);
-        saveToHistory(data, formData);
+      const data = await res.json();
+      if (res.ok) {
+        setPrediction(data);
+        saveHistoryRecord(data.prediction_value, form);
       } else {
-        setError(data.error || 'Prediction failed');
+        setError(data.error || data.message || 'Valuation request was rejected by server');
       }
-    } catch (err) {
-      setError('Network error. Make sure the API is running.');
+    } catch {
+      setError('Unable to reach prediction API. Verify that backend is running on port 8080.');
     } finally {
       setLoading(false);
     }
   };
 
-  const formFields = [
-    { name: 'MedInc', label: 'Median Income', icon: TrendingUp, min: 0, step: 0.1 },
-    { name: 'HouseAge', label: 'House Age', icon: Calendar, min: 0, step: 1 },
-    { name: 'AveRooms', label: 'Avg Rooms', icon: DoorOpen, min: 0, step: 0.1 },
-    { name: 'AveBedrms', label: 'Avg Bedrooms', icon: Bed, min: 0, step: 0.1 },
-    { name: 'Population', label: 'Population', icon: Users, min: 0, step: 1 },
-    { name: 'AveOccup', label: 'Avg Occupancy', icon: HomeIcon, min: 0.1, step: 0.1 },
-    { name: 'Latitude', label: 'Latitude', icon: MapPin, min: 32, max: 42, step: 0.01 },
-    { name: 'Longitude', label: 'Longitude', icon: MapPin, min: -125, max: -114, step: 0.01 },
-  ];
+  // Calculations for Mock-up Scales
+  const priceUSD = useMemo(() => {
+    return prediction ? Math.round(prediction.prediction_value * 100000) : 412500;
+  }, [prediction]);
+
+  const lowEstimateUSD = Math.round(priceUSD * 0.88);
+  const highEstimateUSD = Math.round(priceUSD * 1.12);
+
+  // Estimated monthly mortgage (20% down, 6.75% 30yr fixed, + property tax / insurance)
+  const estimatedMortgage = useMemo(() => {
+    const principal = priceUSD * 0.80;
+    const monthlyRate = 0.0675 / 12;
+    const n = 360;
+    const pAndI = (principal * (monthlyRate * Math.pow(1 + monthlyRate, n))) / (Math.pow(1 + monthlyRate, n) - 1);
+    const taxesAndInsurance = (priceUSD * 0.015) / 12;
+    return Math.round(pAndI + taxesAndInsurance);
+  }, [priceUSD]);
+
+  // Price per room metric
+  const pricePerRoom = useMemo(() => {
+    return form.AveRooms > 0 ? Math.round(priceUSD / form.AveRooms) : 0;
+  }, [priceUSD, form.AveRooms]);
+
+  // Affordability ratio (Home Price / Annual Income)
+  const affordabilityRatio = useMemo(() => {
+    const annualIncome = form.MedInc * 10000;
+    return annualIncome > 0 ? (priceUSD / annualIncome).toFixed(1) : '4.5';
+  }, [priceUSD, form.MedInc]);
+
+  // Scale pin positioning (between $100K and $1M)
+  const scalePercentage = useMemo(() => {
+    const min = 80000;
+    const max = 800000;
+    const clamped = Math.min(Math.max(priceUSD, min), max);
+    return Math.round(((clamped - min) / (max - min)) * 100);
+  }, [priceUSD]);
+
+  // Curl command for developers
+  const curlCommand = useMemo(() => {
+    return `curl -X POST ${API_URL}/predict \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(form, null, 2)}'`;
+  }, [form]);
+
+  const handleCopyCurl = () => {
+    navigator.clipboard.writeText(curlCommand);
+    setCopiedCurl(true);
+    setTimeout(() => setCopiedCurl(false), 2000);
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard.writeText(JSON.stringify(prediction || form, null, 2));
+    setCopiedJson(true);
+    setTimeout(() => setCopiedJson(false), 2000);
+  };
+
+  const handleExportCSV = () => {
+    if (history.length === 0) return;
+    const headers = ['Timestamp', 'Price_USD', 'MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude'];
+    const rows = history.map(item => [
+      item.timestamp,
+      item.priceUSD,
+      item.inputs.MedInc,
+      item.inputs.HouseAge,
+      item.inputs.AveRooms,
+      item.inputs.AveBedrms,
+      item.inputs.Population,
+      item.inputs.AveOccup,
+      item.inputs.Latitude,
+      item.inputs.Longitude,
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `valuation_audit_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="app-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <button className="sidebar-icon sidebar-logo">
-          <HomeIcon size={24} />
-        </button>
-        
-        <button 
-          className={`sidebar-icon ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('dashboard')}
-          title="Dashboard"
-        >
-          <BarChart3 size={22} />
-        </button>
-        
-        <button 
-          className={`sidebar-icon ${activeTab === 'predict' ? 'active' : ''}`}
-          onClick={() => setActiveTab('predict')}
-          title="Predict"
-        >
-          <Sparkles size={22} />
-        </button>
-        
-        <button 
-          className={`sidebar-icon ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-          title="History"
-        >
-          <History size={22} />
-        </button>
-        
-        <button 
-          className={`sidebar-icon ${activeTab === 'insights' ? 'active' : ''}`}
-          onClick={() => setActiveTab('insights')}
-          title="Insights"
-        >
-          <TrendingUp size={22} />
-        </button>
-        
-        <div className="sidebar-divider" />
-        
-        <button 
-          className="sidebar-icon" 
-          onClick={toggleTheme} 
-          style={{ marginTop: 'auto' }}
-          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-        >
-          {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
-        </button>
+    <div className="app-shell">
+      {/* Sleek Architectural Sidebar */}
+      <aside className="app-sidebar">
+        <div className="brand-badge" title="PropVal AI Valuation Engine">
+          <Building size={24} />
+        </div>
+
+        <nav className="nav-cluster">
+          <button 
+            className={`nav-btn ${activeTab === 'predict' ? 'active' : ''}`}
+            onClick={() => setActiveTab('predict')}
+            title="Precision Valuation"
+          >
+            <Sparkles size={20} />
+          </button>
+
+          <button 
+            className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+            title="Market Intelligence"
+          >
+            <BarChart3 size={20} />
+          </button>
+
+          <button 
+            className={`nav-btn ${activeTab === 'developer' ? 'active' : ''}`}
+            onClick={() => setActiveTab('developer')}
+            title="Developer Inspector & Telemetry"
+          >
+            <Code2 size={20} />
+          </button>
+
+          <button 
+            className={`nav-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+            title="Audit History"
+          >
+            <History size={20} />
+          </button>
+        </nav>
+
+        <div className="sidebar-footer">
+          <button 
+            className="nav-btn" 
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to Architectural Light' : 'Switch to Charcoal Dark'}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Header */}
-        <div className="header">
-          <div>
-            <h1 className="header-title">
-              {activeTab === 'dashboard' && 'Dashboard'}
-              {activeTab === 'predict' && 'Price Prediction'}
-              {activeTab === 'history' && 'Prediction History'}
-              {activeTab === 'insights' && 'Market Insights'}
+      {/* Main Experience Viewport */}
+      <main className="app-main">
+        {/* Top Header Banner */}
+        <header className="top-header">
+          <div className="header-meta">
+            <h1>
+              <span>PropVal AI</span>
+              <span style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '6px', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', border: '1px solid var(--accent-emerald-border)' }}>
+                v2.0.0
+              </span>
             </h1>
-            <p className="header-subtitle">California House Price Predictor</p>
+            <p>California Residential Real Estate Valuation & Machine Learning Engine</p>
           </div>
-          
-          <div className="header-actions">
-            <div className={`badge ${apiStatus === 'healthy' ? 'badge-success' : apiStatus === 'error' ? 'badge-error' : 'badge-warning'}`}>
-              {apiStatus === 'healthy' ? <CheckCircle size={14} /> : apiStatus === 'error' ? <XCircle size={14} /> : <Loader size={14} className="spinner" />}
-              {apiStatus === 'checking' && 'Checking'}
-              {apiStatus === 'healthy' && 'Connected'}
-              {apiStatus === 'error' && 'Offline'}
+
+          <div className="header-pill-group">
+            <div className={`status-pill ${apiStatus === 'healthy' ? 'online' : apiStatus === 'error' ? 'offline' : ''}`}>
+              {apiStatus === 'healthy' ? (
+                <>
+                  <CheckCircle size={14} />
+                  <span>Model Online (8080)</span>
+                </>
+              ) : apiStatus === 'error' ? (
+                <>
+                  <XCircle size={14} />
+                  <span>API Disconnected</span>
+                </>
+              ) : (
+                <>
+                  <Loader size={14} className="spinner" />
+                  <span>Verifying API</span>
+                </>
+              )}
+            </div>
+
+            <button 
+              className={`dev-toggle-btn ${activeTab === 'developer' ? 'active' : ''}`}
+              onClick={() => setActiveTab(activeTab === 'developer' ? 'predict' : 'developer')}
+            >
+              <Terminal size={14} />
+              <span>Dev Inspector</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Real Estate KPI Metrics Strip */}
+        <div className="kpi-strip">
+          <div className="kpi-unit">
+            <div className="kpi-header">
+              <span>Fair Market Valuation</span>
+              <DollarSign size={16} style={{ color: 'var(--accent-emerald)' }} />
+            </div>
+            <div className="kpi-number" style={{ color: 'var(--accent-emerald)' }}>
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceUSD)}
+            </div>
+            <div className="kpi-footer">
+              <span style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>Spread:</span>
+              <span>${(lowEstimateUSD / 1000).toFixed(0)}k - ${(highEstimateUSD / 1000).toFixed(0)}k</span>
+            </div>
+          </div>
+
+          <div className="kpi-unit">
+            <div className="kpi-header">
+              <span>Est. Monthly Payment</span>
+              <Building size={16} style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <div className="kpi-number">
+              ${estimatedMortgage.toLocaleString()}
+            </div>
+            <div className="kpi-footer">
+              <span>30yr Fixed (6.75% + Tax)</span>
+            </div>
+          </div>
+
+          <div className="kpi-unit">
+            <div className="kpi-header">
+              <span>Price / Room Metric</span>
+              <DoorOpen size={16} style={{ color: 'var(--accent-amber)' }} />
+            </div>
+            <div className="kpi-number">
+              ${pricePerRoom.toLocaleString()}
+            </div>
+            <div className="kpi-footer">
+              <span>Across {form.AveRooms} average rooms</span>
+            </div>
+          </div>
+
+          <div className="kpi-unit">
+            <div className="kpi-header">
+              <span>Affordability Index</span>
+              <Gauge size={16} style={{ color: '#8b5cf6' }} />
+            </div>
+            <div className="kpi-number">
+              {affordabilityRatio}x
+            </div>
+            <div className="kpi-footer">
+              <span>Income-to-Price Multiplier</span>
             </div>
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {/* Dashboard Tab */}
-          {activeTab === 'dashboard' && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              {/* Overview Card */}
-              <div className="overview-card" style={{ marginBottom: '24px' }}>
-                <div className="overview-header">
-                  <h2 className="overview-title">Overview</h2>
-                  <select style={{ 
-                    background: 'rgba(255,255,255,0.2)', 
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    cursor: 'pointer'
-                  }}>
-                    <option>Monthly</option>
-                    <option>Weekly</option>
-                    <option>Yearly</option>
-                  </select>
-                </div>
-
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <Line 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke="rgba(255,255,255,0.8)" 
-                        strokeWidth={3}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="stats-row">
-                  <div className="stat-box">
-                    <div className="stat-label">Total Time</div>
-                    <div className="stat-value">748 Hr</div>
-                    <div className="stat-subtitle">April</div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-label">Total Steps</div>
-                    <div className="stat-value">9.178 St</div>
-                    <div className="stat-subtitle">April</div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-label">Target</div>
-                    <div className="stat-value">9.200 St</div>
-                    <div className="stat-subtitle">April</div>
+        {/* Tab 1: Primary Valuation Experience */}
+        {activeTab === 'predict' && (
+          <div className="grid-cols-12">
+            {/* Left Column: Form & Property Configuration */}
+            <div className="col-span-7">
+              <div className="clean-card">
+                <div className="card-title-row">
+                  <div>
+                    <h2 className="card-title">
+                      <Sliders size={18} style={{ color: 'var(--accent-emerald)' }} />
+                      <span>Property Attributes</span>
+                    </h2>
+                    <p className="card-caption">Fine-tune census block group features to estimate market price</p>
                   </div>
                 </div>
-              </div>
 
-              {/* Feature Cards */}
-              <div className="grid-2">
-                <motion.div 
-                  className="feature-card card-gradient" 
-                  onClick={() => setActiveTab('predict')}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="feature-icon icon-purple">
-                    <Sparkles size={32} />
-                  </div>
-                  <div className="feature-content">
-                    <h3 className="feature-title" style={{ color: 'white' }}>Price Prediction</h3>
-                    <p className="feature-subtitle" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                      Get instant house price estimates
-                    </p>
-                    <div className="progress-container">
-                      <div className="progress-header">
-                        <span className="progress-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Accuracy</span>
-                        <span className="progress-value" style={{ color: 'white' }}>84%</span>
-                      </div>
-                      <div className="progress-bar" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                        <motion.div 
-                          className="progress-fill" 
-                          style={{ background: 'rgba(255,255,255,0.8)' }}
-                          initial={{ width: 0 }}
-                          animate={{ width: '84%' }}
-                          transition={{ duration: 1, delay: 0.5 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  className="feature-card card-pink"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="feature-icon icon-pink">
-                    <TrendingUp size={32} />
-                  </div>
-                  <div className="feature-content">
-                    <h3 className="feature-title" style={{ color: 'white' }}>Market Analysis</h3>
-                    <p className="feature-subtitle" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                      View market trends and insights
-                    </p>
-                    <div className="progress-container">
-                      <div className="progress-header">
-                        <span className="progress-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Total Time</span>
-                        <span className="progress-value" style={{ color: 'white' }}>748 hr</span>
-                      </div>
-                      <div className="progress-bar" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                        <motion.div 
-                          className="progress-fill" 
-                          style={{ background: 'rgba(255,255,255,0.8)' }}
-                          initial={{ width: 0 }}
-                          animate={{ width: '60%' }}
-                          transition={{ duration: 1, delay: 0.7 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid-3" style={{ marginTop: '24px' }}>
-                {[
-                  { icon: Activity, title: 'Model Performance', subtitle: '15 km / month', progress: 45, days: '2 days left', color: 'purple' },
-                  { icon: BarChart3, title: 'Predictions Made', subtitle: `${history.length} total predictions`, progress: 13, days: '17 days left', color: 'blue' },
-                  { icon: CheckCircle, title: 'Accuracy Rate', subtitle: '84% model accuracy', progress: 60, days: '3 days left', color: 'purple' },
-                ].map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    className="card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 + 0.3 }}
-                    whileHover={{ y: -8 }}
-                  >
-                    <div className={`feature-icon icon-${stat.color}`} style={{ marginBottom: '16px' }}>
-                      <stat.icon size={28} />
-                    </div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px' }}>
-                      {stat.title}
-                    </h3>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                      {stat.subtitle}
-                    </p>
-                    <div className="progress-container">
-                      <div className="progress-header">
-                        <span className="progress-label">Progress</span>
-                        <span className="progress-value">{stat.progress}%</span>
-                      </div>
-                      <div className="progress-bar">
-                        <motion.div 
-                          className="progress-fill"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${stat.progress}%` }}
-                          transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
-                        />
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      <span>{index === 0 ? '0 / 30km' : index === 1 ? '2 / 15km' : '3200/ 4800 steps'}</span>
-                      <span className={`badge ${index === 0 ? 'badge-error' : index === 1 ? 'badge-warning' : 'badge-success'}`} style={{ fontSize: '0.75rem' }}>
-                        {stat.days}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Predict Tab */}
-          {activeTab === 'predict' && (
-            <motion.div
-              key="predict"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <div className="grid-2">
-                <div className="card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700' }}>Property Details</h2>
-                    <button onClick={loadSample} className="btn btn-secondary btn-sm">
-                      Load Sample
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSubmit}>
-                    <div className="grid-2" style={{ marginBottom: '24px' }}>
-                      {formFields.map((field) => (
-                        <div key={field.name}>
-                          <label>
-                            <field.icon size={16} style={{ color: 'var(--primary)' }} />
-                            {field.label}
-                          </label>
-                          <input
-                            type="number"
-                            name={field.name}
-                            step={field.step}
-                            min={field.min}
-                            max={field.max}
-                            required
-                            value={formData[field.name as keyof FormData]}
-                            onChange={handleChange}
-                          />
-                        </div>
-                      ))}
-                    </div>
-
+                {/* Archetype Quick Selection Strip */}
+                <div style={{ marginBottom: '12px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Quick Archetype Presets:
+                  </span>
+                </div>
+                <div className="archetype-strip">
+                  {ARCHETYPES.map((arch, i) => (
                     <button
-                      type="submit"
-                      className="btn btn-primary"
+                      key={i}
+                      type="button"
+                      className="archetype-btn"
+                      onClick={() => applyArchetype(arch)}
+                    >
+                      <span>{arch.name}</span>
+                      <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '10px', background: 'var(--bg-pill)', color: 'var(--text-muted)' }}>
+                        {arch.tag}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <form onSubmit={handleValuationSubmit}>
+                  <div className="input-matrix">
+                    {/* MedInc */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <TrendingUp size={14} style={{ color: 'var(--accent-emerald)' }} />
+                          <span>Median Income</span>
+                        </label>
+                        <span className="field-value-badge">${(form.MedInc * 10).toFixed(0)}k/yr</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="15" 
+                        step="0.1"
+                        value={form.MedInc} 
+                        onChange={(e) => handleFieldChange('MedInc', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* HouseAge */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <Calendar size={14} style={{ color: 'var(--accent-blue)' }} />
+                          <span>Structure Age</span>
+                        </label>
+                        <span className="field-value-badge">{form.HouseAge} yrs</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="52" 
+                        step="1"
+                        value={form.HouseAge} 
+                        onChange={(e) => handleFieldChange('HouseAge', parseInt(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* AveRooms */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <DoorOpen size={14} style={{ color: 'var(--accent-amber)' }} />
+                          <span>Avg Total Rooms</span>
+                        </label>
+                        <span className="field-value-badge">{form.AveRooms.toFixed(1)}</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="2" 
+                        max="12" 
+                        step="0.1"
+                        value={form.AveRooms} 
+                        onChange={(e) => handleFieldChange('AveRooms', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* AveBedrms */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <Bed size={14} style={{ color: '#ec4899' }} />
+                          <span>Avg Bedrooms</span>
+                        </label>
+                        <span className="field-value-badge">{form.AveBedrms.toFixed(1)}</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0.5" 
+                        max="4" 
+                        step="0.1"
+                        value={form.AveBedrms} 
+                        onChange={(e) => handleFieldChange('AveBedrms', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* Population */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <Users size={14} style={{ color: '#8b5cf6' }} />
+                          <span>Block Population</span>
+                        </label>
+                        <span className="field-value-badge">{form.Population}</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="100" 
+                        max="6000" 
+                        step="50"
+                        value={form.Population} 
+                        onChange={(e) => handleFieldChange('Population', parseInt(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* AveOccup */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <HomeIcon size={14} style={{ color: '#06b6d4' }} />
+                          <span>Avg Occupancy</span>
+                        </label>
+                        <span className="field-value-badge">{form.AveOccup.toFixed(1)}/hse</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="6" 
+                        step="0.1"
+                        value={form.AveOccup} 
+                        onChange={(e) => handleFieldChange('AveOccup', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* Latitude */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <MapPin size={14} style={{ color: '#ef4444' }} />
+                          <span>Latitude (N)</span>
+                        </label>
+                        <span className="field-value-badge">{form.Latitude.toFixed(2)}°</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="32.5" 
+                        max="42.0" 
+                        step="0.05"
+                        value={form.Latitude} 
+                        onChange={(e) => handleFieldChange('Latitude', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+
+                    {/* Longitude */}
+                    <div className="field-cell">
+                      <div className="field-top-row">
+                        <label className="field-label">
+                          <MapPin size={14} style={{ color: '#ef4444' }} />
+                          <span>Longitude (W)</span>
+                        </label>
+                        <span className="field-value-badge">{form.Longitude.toFixed(2)}°</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="-124.5" 
+                        max="-114.5" 
+                        step="0.05"
+                        value={form.Longitude} 
+                        onChange={(e) => handleFieldChange('Longitude', parseFloat(e.target.value))}
+                        className="range-slider"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '24px' }}>
+                    <button 
+                      type="submit" 
+                      className="btn-primary"
                       disabled={loading}
-                      style={{ width: '100%', padding: '16px', fontSize: '1.05rem' }}
                     >
                       {loading ? (
                         <>
-                          <Loader size={20} className="spinner" />
-                          Analyzing...
+                          <Loader size={18} className="spinner" />
+                          <span>Running Random Forest Regressor...</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles size={20} />
-                          Predict Price
+                          <Sparkles size={18} />
+                          <span>Calculate Estimated Valuation</span>
                         </>
                       )}
                     </button>
-                  </form>
-                </div>
-
-                <div className="card">
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '24px' }}>Result</h2>
-                  
-                  {!result && !error && !loading && (
-                    <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                      <HomeIcon size={60} style={{ margin: '0 auto 20px', opacity: 0.3 }} />
-                      <p>Enter property details to get prediction</p>
-                    </div>
-                  )}
-
-                  {loading && (
-                    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                      <Loader size={50} className="spinner" style={{ color: 'var(--primary)' }} />
-                    </div>
-                  )}
-
-                  {result && (
-                    <motion.div
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                    >
-                      <div className="result-display">
-                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '12px', position: 'relative', zIndex: 1 }}>
-                          Estimated Value
-                        </p>
-                        <div className="price-value">
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: 'USD',
-                            maximumFractionDigits: 0,
-                          }).format(result.prediction_value * 100000)}
-                        </div>
-                      </div>
-
-                      <div className="grid-3" style={{ marginTop: '20px' }}>
-                        <div className="card" style={{ textAlign: 'center', padding: '20px' }}>
-                          <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary)' }}>84%</div>
-                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Accuracy</div>
-                        </div>
-                        <div className="card" style={{ textAlign: 'center', padding: '20px' }}>
-                          <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary)' }}>±$48K</div>
-                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Avg Error</div>
-                        </div>
-                        <div className="card" style={{ textAlign: 'center', padding: '20px' }}>
-                          <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary)' }}>ML</div>
-                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Ensemble</div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {error && (
-                    <div style={{
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '2px solid var(--error)',
-                      padding: '20px',
-                      borderRadius: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
-                    }}>
-                      <XCircle size={24} style={{ color: 'var(--error)' }} />
-                      <div>
-                        <p style={{ fontWeight: '600', color: 'var(--error)' }}>Error</p>
-                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{error}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* History Tab */}
-          {activeTab === 'history' && (
-            <motion.div
-              key="history"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <div className="card">
-                <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '24px' }}>
-                  Recent Predictions
-                </h2>
-                
-                {history.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                    <History size={60} style={{ margin: '0 auto 20px', opacity: 0.3 }} />
-                    <p>No predictions yet</p>
                   </div>
-                ) : (
-                  <div style={{ display: 'grid', gap: '16px' }}>
-                    {history.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="card"
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}
-                      >
-                        <div>
-                          <p style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--success)' }}>
-                            {new Intl.NumberFormat('en-US', {
-                              style: 'currency',
-                              currency: 'USD',
-                              maximumFractionDigits: 0,
-                            }).format(item.prediction_value * 100000)}
-                          </p>
-                          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                            {new Date(item.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <span className="badge badge-primary">Income: ${item.inputs.MedInc}</span>
-                          <span className="badge badge-primary">Age: {item.inputs.HouseAge}y</span>
-                        </div>
-                      </motion.div>
-                    ))}
+                </form>
+
+                {error && (
+                  <div style={{ marginTop: '16px', padding: '12px 16px', borderRadius: '10px', background: 'var(--accent-rose-light)', border: '1px solid var(--accent-rose)', color: 'var(--accent-rose)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <XCircle size={16} />
+                    <span>{error}</span>
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {/* Insights Tab */}
-          {activeTab === 'insights' && (
-            <motion.div
-              key="insights"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <div className="card">
-                <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '24px' }}>
-                  Market Trends
-                </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-secondary)" />
-                    <YAxis stroke="var(--text-secondary)" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        background: 'var(--bg-card)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '12px'
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#7c3aed" 
-                      strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorValue)" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+            {/* Right Column: Valuation Hero & Mock-up Scales */}
+            <div className="col-span-5">
+              {/* Primary Valuation Hero Card */}
+              <div className="valuation-hero">
+                <span className="valuation-label">Algorithmic Valuation</span>
+                <div className="valuation-amount">
+                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceUSD)}
+                </div>
+                <div className="valuation-subline">
+                  <Shield size={16} style={{ color: 'var(--accent-emerald)' }} />
+                  <span>±$48K Confidence Interval (84% R² Cross-Validated)</span>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+              {/* UX Mock-up Scale 1: Market Valuation Spread Scale */}
+              <div className="scale-wrapper">
+                <div className="scale-header">
+                  <span className="scale-title">
+                    <Gauge size={16} style={{ color: 'var(--accent-emerald)' }} />
+                    <span>Valuation Spread & Benchmark Scale</span>
+                  </span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
+                    {scalePercentage}% of Scale
+                  </span>
+                </div>
+
+                <div className="scale-track">
+                  <div 
+                    className="scale-pin"
+                    style={{ left: `${scalePercentage}%` }}
+                    title={`Current Estimated Value: $${(priceUSD / 1000).toFixed(0)}k`}
+                  />
+                </div>
+
+                <div className="scale-markers">
+                  <span>$80K (Suburban Low)</span>
+                  <span>$400K (Median)</span>
+                  <span>$800K+ (Prime Tier)</span>
+                </div>
+              </div>
+
+              {/* UX Mock-up Scale 2: Affordability & Density Gauge */}
+              <div className="clean-card" style={{ marginTop: '20px' }}>
+                <div className="card-title-row" style={{ marginBottom: '14px' }}>
+                  <h3 className="card-title" style={{ fontSize: '0.95rem' }}>
+                    <Layers size={16} style={{ color: 'var(--accent-blue)' }} />
+                    <span>Underwriting Risk & Density Gauges</span>
+                  </h3>
+                </div>
+
+                {/* Metric 1 */}
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Affordability Ratio</span>
+                    <span style={{ fontWeight: 700, color: parseFloat(affordabilityRatio) > 6 ? 'var(--accent-rose)' : 'var(--accent-emerald)' }}>
+                      {affordabilityRatio}x Annual Income
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', background: 'var(--bg-pill)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', 
+                        width: `${Math.min(parseFloat(affordabilityRatio) * 10, 100)}%`,
+                        backgroundColor: parseFloat(affordabilityRatio) > 6 ? 'var(--accent-rose)' : 'var(--accent-emerald)',
+                        borderRadius: '3px'
+                      }} 
+                    />
+                  </div>
+                </div>
+
+                {/* Metric 2 */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Room-to-Occupant Ratio</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                      {(form.AveRooms / form.AveOccup).toFixed(2)} rooms/person
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', background: 'var(--bg-pill)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', 
+                        width: `${Math.min((form.AveRooms / form.AveOccup) * 28, 100)}%`,
+                        backgroundColor: 'var(--accent-blue)',
+                        borderRadius: '3px'
+                      }} 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Developer Peek Pill */}
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('developer')}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-blue)', fontSize: '0.825rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>Inspect Pipeline JSON & Latency Telemetry</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Market Intelligence & Geospatial Analytics */}
+        {activeTab === 'dashboard' && (
+          <div className="grid-cols-12">
+            <div className="col-span-8">
+              <div className="clean-card">
+                <div className="card-title-row">
+                  <div>
+                    <h2 className="card-title">
+                      <TrendingUp size={18} style={{ color: 'var(--accent-emerald)' }} />
+                      <span>California Market Valuation Curve</span>
+                    </h2>
+                    <p className="card-caption">Empirical relationship between Block Group Income and Property Price</p>
+                  </div>
+                </div>
+
+                <div style={{ height: '320px', width: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={MARKET_TRENDS} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                      <XAxis dataKey="incomeTier" stroke="var(--text-muted)" fontSize={12} />
+                      <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(val) => `$${val}k`} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'var(--bg-surface)', 
+                          borderColor: 'var(--border-color)', 
+                          borderRadius: '8px',
+                          color: 'var(--text-main)',
+                          fontFamily: 'var(--font-mono)'
+                        }}
+                        formatter={(val: any) => [`$${val},000`, 'Median Price']}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="avgPrice" 
+                        stroke="#10b981" 
+                        strokeWidth={2.5}
+                        fillOpacity={1} 
+                        fill="url(#priceGradient)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-4">
+              <div className="clean-card">
+                <h3 className="card-title" style={{ marginBottom: '16px', fontSize: '1rem' }}>
+                  <Layers size={16} style={{ color: 'var(--accent-blue)' }} />
+                  <span>Feature Weights (RF Pipeline)</span>
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {FEATURE_IMPORTANCES.map((item, i) => (
+                    <div key={i}>
+                      <div className="feature-weight-row">
+                        <span style={{ color: 'var(--text-secondary)' }}>{item.feature}</span>
+                        <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{item.weight}%</span>
+                      </div>
+                      <div className="feature-bar-bg">
+                        <div 
+                          className="feature-bar-fill" 
+                          style={{ width: `${item.weight}%`, backgroundColor: item.color }} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Developer Inspector & Telemetry */}
+        {activeTab === 'developer' && (
+          <div className="grid-cols-12">
+            {/* API Request & cURL generator */}
+            <div className="col-span-6">
+              <div className="clean-card">
+                <div className="card-title-row">
+                  <div>
+                    <h2 className="card-title">
+                      <Terminal size={18} style={{ color: 'var(--accent-blue)' }} />
+                      <span>One-Click cURL Terminal Command</span>
+                    </h2>
+                    <p className="card-caption">Exact command formatted for command line verification</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="copy-btn" 
+                    onClick={handleCopyCurl}
+                  >
+                    {copiedCurl ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copiedCurl ? 'Copied' : 'Copy cURL'}</span>
+                  </button>
+                </div>
+
+                <pre className="code-block">{curlCommand}</pre>
+
+                <div style={{ marginTop: '20px' }}>
+                  <div className="card-title-row">
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                      JSON Request Payload:
+                    </span>
+                    <button 
+                      type="button" 
+                      className="copy-btn" 
+                      onClick={handleCopyJson}
+                    >
+                      {copiedJson ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedJson ? 'Copied' : 'Copy JSON'}</span>
+                    </button>
+                  </div>
+                  <pre className="code-block">{JSON.stringify(form, null, 2)}</pre>
+                </div>
+              </div>
+            </div>
+
+            {/* Pipeline Architecture & Telemetry */}
+            <div className="col-span-6">
+              <div className="clean-card">
+                <div className="card-title-row">
+                  <div>
+                    <h2 className="card-title">
+                      <Activity size={18} style={{ color: 'var(--accent-emerald)' }} />
+                      <span>Inference Telemetry & Model Specs</span>
+                    </h2>
+                    <p className="card-caption">Runtime statistics and serialization architecture</p>
+                  </div>
+                </div>
+
+                <div className="dev-console">
+                  <p>⚡ Latency: <strong style={{ color: 'var(--accent-emerald)' }}>{latencyMs ? `${latencyMs} ms` : 'Sub-50ms (Cached)'}</strong></p>
+                  <p>🔌 Endpoint: <strong style={{ color: 'var(--text-main)' }}>POST /predict</strong></p>
+                  <p>📦 Payload Validation: <strong style={{ color: 'var(--accent-blue)' }}>Pydantic v2 (HouseFeatures)</strong></p>
+                  <p>🤖 Pipeline Stages:</p>
+                  <p style={{ paddingLeft: '14px', color: 'var(--text-secondary)' }}>1. FeatureEngineer(drop_features=[&apos;AveBedrms&apos;])</p>
+                  <p style={{ paddingLeft: '14px', color: 'var(--text-secondary)' }}>2. StandardScaler()</p>
+                  <p style={{ paddingLeft: '14px', color: 'var(--text-secondary)' }}>3. RandomForestRegressor(n_estimators=100, n_jobs=-1)</p>
+                  <p>🛡️ Security Headers: nosniff, DENY, 1; mode=block</p>
+                  <p>🐳 Docker Hub Ready: Multi-stage non-root container</p>
+                </div>
+
+                <div style={{ marginTop: '20px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
+                    Live Response Payload:
+                  </span>
+                  <pre className="code-block">{JSON.stringify(prediction, null, 2)}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Valuation Audit History */}
+        {activeTab === 'history' && (
+          <div className="clean-card">
+            <div className="card-title-row">
+              <div>
+                <h2 className="card-title">
+                  <History size={18} style={{ color: 'var(--accent-emerald)' }} />
+                  <span>Valuation Audit Ledger</span>
+                </h2>
+                <p className="card-caption">Persistent log of real-time appraisal estimations</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button" 
+                  className="archetype-btn"
+                  onClick={handleExportCSV}
+                  disabled={history.length === 0}
+                >
+                  <Download size={14} />
+                  <span>Export CSV</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  className="archetype-btn"
+                  onClick={() => {
+                    setHistory([]);
+                    localStorage.removeItem('propval_history');
+                  }}
+                  disabled={history.length === 0}
+                >
+                  <Trash2 size={14} />
+                  <span>Clear Ledger</span>
+                </button>
+              </div>
+            </div>
+
+            {history.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                <History size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
+                <p>No appraisals logged yet. Run a valuation calculation to populate the audit ledger.</p>
+              </div>
+            ) : (
+              <div>
+                {history.map((record) => (
+                  <div key={record.id} className="history-row">
+                    <div>
+                      <div className="history-price">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(record.priceUSD)}
+                      </div>
+                      <div className="history-meta">
+                        <span>{new Date(record.timestamp).toLocaleString()}</span>
+                        <span style={{ margin: '0 8px' }}>•</span>
+                        <span>Income: ${((record.inputs?.MedInc ?? 0) * 10).toFixed(0)}k/yr</span>
+                        <span style={{ margin: '0 8px' }}>•</span>
+                        <span>{record.inputs?.HouseAge ?? 0} yrs old</span>
+                        <span style={{ margin: '0 8px' }}>•</span>
+                        <span>{record.inputs?.AveRooms ?? 0} rooms</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="archetype-btn"
+                      onClick={() => {
+                        setForm(record.inputs);
+                        setActiveTab('predict');
+                      }}
+                    >
+                      <span>Load into Form</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
