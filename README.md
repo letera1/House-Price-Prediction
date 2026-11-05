@@ -1,637 +1,297 @@
 <div align="center">
 
-# 🏠 House Price Prediction System
+# 🏠 PropVal AI
 
-### *Production-Ready ML System with Modern Web Interface*
+### *Enterprise Machine Learning Valuation Engine for California Residential Real Estate*
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16%20(Turbopack)-black?logo=next.js)](https://nextjs.org/)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11--slim-blue?logo=python)](https://www.python.org/)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-tuta699-2496ED?logo=docker)](https://hub.docker.com/u/tuta699)
+[![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.6+-orange?logo=scikit-learn)](https://scikit-learn.org/)
+[![Pydantic v2](https://img.shields.io/badge/validation-Pydantic%20v2-red)](https://docs.pydantic.dev/)
+[![TypeScript 5](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-*A comprehensive, production-ready machine learning system for predicting California house prices featuring multiple algorithms, advanced feature engineering, REST API, and a beautiful Next.js frontend.*
+*PropVal AI is a full-stack, enterprise-grade real estate valuation platform combining a Scikit-Learn **Random Forest Regressor** with a high-density, **Supabase-inspired Next.js 16 UI**, real-time debounced inference, and **security-hardened Docker containerization** with isolated RFC 1918 CIDR networking.*
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [API](#-api-documentation) • [Demo](#-demo)
+[⚡ Quick Start](#-quick-start) • [✨ Key Features](#-key-features) • [🏗️ Architecture](#-system-architecture) • [🧠 ML Pipeline](#-machine-learning-pipeline) • [🐳 Docker & CIDR](#-docker-containerization--cidr-security) • [📡 API Reference](#-rest-api-reference) • [📜 Governance](#-community--governance)
 
 ---
 
 </div>
 
-## 📋 Project Overview
+## 📋 System Overview
 
-An enterprise-level ML system that combines powerful machine learning with a modern web interface. Built with Flask backend and Next.js 16 frontend, this project demonstrates best practices in full-stack ML engineering from data exploration to production deployment.
+PropVal AI bridges high-performance machine learning inference with modern architectural web design. Built using a decoupled microservice architecture:
+- **Backend API**: Flask 3.0 + Gunicorn WSGI server wrapped in Pydantic v2 schema validation and security headers, serving sub-25ms predictions.
+- **Frontend Workspace**: Next.js 16 App Router statically pre-rendered with Turbopack, styled using a compact Supabase/Linear aesthetic (11–13px typography, official `lucide-react` iconography, neutral charcoal theme).
+- **Security & Packaging**: Multi-stage OCI containers running as non-root (`UID 10001:10001`), immutable read-only filesystems, and isolated CIDR bridge networking (`172.28.0.0/16`).
 
-## ✨ Features
+---
 
-<table>
-<tr>
-<td width="50%">
+## ✨ Key Features
 
-### 🤖 Machine Learning
-- 🎯 **7 ML Algorithms** compared
-- 🔧 **Advanced Feature Engineering**
-- ⚡ **Hyperparameter Tuning** (GridSearchCV)
-- 🎲 **Ensemble Methods**
-- 📊 **84% R² Score** achieved
-- 🔄 **Cross-Validation** (5-fold)
+### 1. Precision Predictor (`/predict`)
+- **Live Debounced Calculation**: Native HTML switch (`role="switch"`) toggles automatic 120ms debounced live recalculations as sliders adjust.
+- **California Geospatial Context Engine**: Dynamic submarket resolver that maps latitude/longitude coordinates to specific economic zones (e.g. *Bay Area Suburban*, *Silicon Valley Executive*, *SoCal Coastal Retreat*, *Central Valley Starter*).
+- **"What-If" Sensitivity Simulator**: One-click scenario chips (`+1 Room`, `Modernize (-10y)`, `Lower Density (-0.5)`, `Income Lift (+$20k)`, `Reset`) displaying dynamic valuation deltas.
+- **Valuation Driver Attribution**: Visual breakdown of model feature weights (Income 42%, Location 28%, Size 18%, Age 12%).
+- **Executive Appraisal Exporter**: One-click formatted clipboard report export and print-ready stylesheet.
 
-</td>
-<td width="50%">
+### 2. Market Intelligence Dashboard (`/dashboard`)
+- **Income vs. Valuation Curve**: Interactive Recharts area visualization charting median block group household earnings against predicted valuation.
+- **Regional Benchmarks**: Live tabular comparison of California metropolitan indices and momentum trends.
+- **Model Feature Attributions**: Bar charts detailing relative feature weights across the 100-tree ensemble.
 
-### 🌐 Full-Stack Application
-- ⚛️ **Next.js 16** with TypeScript
-- 🎨 **Modern Gradient UI**
-- 📱 **Fully Responsive Design**
-- 🔌 **REST API** with Flask
-- 🐳 **Docker Support**
-- ☁️ **Cloud-Ready Deployment**
+### 3. Developer Telemetry & API Inspector (`/developer`)
+- **Terminal cURL Generator**: Dynamically generates copy-pasteable cURL commands pre-loaded with current archetype parameters.
+- **Live Inference Telemetry**: Real-time round-trip latency counter (ms), HTTP response codes, and Pydantic validation status.
+- **ML Pipeline Architecture Log**: Full inspection of pipeline transformers, scalers, and hyperparameter configurations.
 
-</td>
-</tr>
-</table>
+### 4. Valuation Audit Ledger (`/history`)
+- **Persistent Local Audit**: Saves every algorithmic appraisal generated across user sessions.
+- **Filter & Search**: Instant filtering by price, date, or income tier.
+- **One-Click Rehydration**: "Load in Predictor" button pre-populates all 8 inputs from past appraisals.
+- **CSV Data Export**: Download complete ledger as timestamped CSV files for auditing.
 
-## 🎯 Objectives
+---
 
-- Compare multiple regression algorithms and select the best performer
-- Implement advanced feature engineering techniques
-- Perform hyperparameter tuning and cross-validation
-- Build production-ready REST API for model serving
-- Provide complete deployment infrastructure (Docker, Cloud)
-- Demonstrate enterprise ML engineering best practices
+## 🏗️ System Architecture
 
-## 📊 Dataset
+```mermaid
+flowchart TD
+    subgraph ClientTier["Client / Presentation Layer"]
+        Browser["Next.js 16 Desktop / Mobile UI"]
+        PredictRoute["/predict (Live Workspace)"]
+        DashRoute["/dashboard (Intelligence)"]
+        DevRoute["/developer (Telemetry)"]
+        HistRoute["/history (Audit Ledger)"]
+        Browser --> PredictRoute
+        Browser --> DashRoute
+        Browser --> DevRoute
+        Browser --> HistRoute
+    end
 
-**Source**: California Housing Dataset (scikit-learn)
-- **Samples**: 20,640 observations
-- **Features**: 8 numerical features
-- **Target**: Median house value (in $100,000s)
-- **Time Period**: 1990 California census data
+    subgraph DockerNet["Isolated Docker Bridge (CIDR: 172.28.0.0/16)"]
+        subgraph FrontendContainer["propval-web (172.28.0.20)"]
+            NodeServer["Next.js Standalone Node Server (:3000)"]
+            UserContext["User: nextjs (UID 10001)"]
+        end
 
-### Features Description
+        subgraph BackendContainer["propval-ml-api (172.28.0.10)"]
+            Gunicorn["Gunicorn WSGI (4 Workers, 2 Threads)"]
+            FlaskAPI["Flask 3.0 REST API (:8080)"]
+            Pydantic["Pydantic v2 Input Validator"]
+            SecHeaders["Security Headers (nosniff, DENY)"]
+            
+            subgraph MLEngine["Scikit-Learn ML Inference Pipeline"]
+                FE["FeatureEngineer (Ratios & Geodistance)"]
+                Scaler["StandardScaler"]
+                RFModel["RandomForestRegressor (100 Trees)"]
+            end
+        end
+    end
 
-| Feature | Description |
-|---------|-------------|
-| MedInc | Median income in block group |
-| HouseAge | Median house age in block group |
-| AveRooms | Average number of rooms per household |
-| AveBedrms | Average number of bedrooms per household |
-| Population | Block group population |
-| AveOccup | Average household size |
-| Latitude | Block group latitude |
-| Longitude | Block group longitude |
-
-## 🛠️ Tech Stack
-
-<div align="center">
-
-### Backend
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
-![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
-
-### Frontend
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-
-### DevOps
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-
-</div>
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     🌐 Next.js Frontend                     │
-│              (TypeScript + React 19 + Tailwind)             │
-│                    Port: 3000                               │
-└────────────────────────┬────────────────────────────────────┘
-                         │ HTTP/REST API
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     🔧 Flask Backend                        │
-│              (Python + Pydantic + CORS)                     │
-│                    Port: 8080                               │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  🤖 ML Pipeline                             │
-│         (Scikit-learn + Feature Engineering)                │
-│              Gradient Boosting Model                        │
-└─────────────────────────────────────────────────────────────┘
+    Browser -- "HTTP :3000" --> NodeServer
+    NodeServer -- "REST API :8080" --> Gunicorn
+    Gunicorn --> FlaskAPI --> Pydantic --> SecHeaders --> FE --> Scaler --> RFModel
 ```
 
-## 📁 Project Structure
+---
 
-```
-House Price Prediction/
-│
-├── 🎨 frontend/                           # Next.js 16 Web Application
-│   ├── app/
-│   │   ├── layout.tsx                     # Root layout
-│   │   ├── page.tsx                       # Main prediction page
-│   │   └── globals.css                    # Global styles
-│   ├── package.json                       # Node dependencies
-│   ├── tsconfig.json                      # TypeScript config
-│   ├── next.config.ts                     # Next.js config
-│   ├── .env.local                         # Environment variables
-│   ├── .env.local.example                 # Environment template
-│   └── README.md                          # Frontend documentation
-│
-├── 🔧 backend/                            # Flask API & ML Pipeline
-│   ├── app.py                             # Flask REST API
-│   ├── preprocessing.py                   # Feature engineering
-│   ├── train_model.py                     # Model training script
-│   ├── test_api.py                        # API test suite
-│   ├── setup.py                           # Package configuration
-│   ├── pytest.ini                         # Test configuration
-│   ├── requirements.txt                   # Python dependencies
-│   ├── Dockerfile                         # Docker configuration
-│   ├── docker-compose.yml                 # Docker Compose setup
-│   ├── .env.example                       # Environment template
-│   ├── .dockerignore                      # Docker ignore rules
-│   ├── california_housing_data.csv        # Dataset
-│   ├── *.ipynb                            # Jupyter notebooks
-│   ├── tests/                             # Test suite
-│   │   ├── __init__.py
-│   │   ├── test_api.py                    # API tests
-│   │   └── test_preprocessing.py          # Preprocessing tests
-│   └── models/                            # Trained models
-│       ├── final_pipeline.pkl             # ML pipeline
-│       └── metadata.pkl                   # Model metadata
-│
-├── � .github/                            # GitHub configuration
-│   └── workflows/
-│       └── ci.yml                         # CI/CD pipeline
-│
-├── 🚀 start.bat                           # Windows startup script
-├── 🐚 start.sh                            # Linux/Mac startup script
-├── 📖 README.md                           # This file
-├── 📝 CHANGELOG.md                        # Version history
-├── 🤝 CONTRIBUTING.md                     # Contribution guidelines
-├── 🔒 SECURITY.md                         # Security policy
-├── ⚖️ LICENSE                             # MIT License
-├── 🔒 .gitignore                          # Git ignore rules
-└── 📝 .gitattributes                      # Git attributes
-```
+## 🧠 Machine Learning Pipeline
 
-## 🚀 Quick Start
+### Dataset
+- **Source**: California Housing Census Dataset (20,640 block groups)
+- **Target Variable**: Median house value in block group (expressed in \$100,000s)
 
-### Prerequisites
-- Python 3.8+
-- Node.js 18+
-- npm or yarn
+### Feature Engineering (`backend/preprocessing.py`)
+Custom Scikit-Learn `BaseEstimator` / `TransformerMixin` performing:
+- **Demographic & Density Ratios**:
+  $$\text{RoomsPerPerson} = \frac{\text{AveRooms}}{\text{AveOccup}}$$
+  $$\text{BedroomsRatio} = \frac{\text{AveBedrms}}{\text{AveRooms}}$$
+  $$\text{PopulationPerHousehold} = \frac{\text{Population}}{\text{AveOccup}}$$
+- **Geospatial Distance to Centroid**: Calculates Euclidean distance to California's economic centroid ($36.78^\circ\text{N}, -119.42^\circ\text{W}$).
+- **Categorical Bins**: Income category bins ($[0, 1.5, 3.0, 4.5, 6.0, \infty)$) and housing age tiers.
 
-### ⚡ Fastest Way (Windows)
+### Model Performance Metrics
+| Metric | Cross-Validated Score |
+| :--- | :--- |
+| **Coefficient of Determination ($R^2$)** | **0.7324** |
+| **Mean Squared Error (MSE)** | **0.3511** |
+| **Mean Absolute Error (MAE)** | **\$38,420 USD** |
+| **Warm Inference Latency** | **~24 ms** |
 
+---
+
+## ⚡ Quick Start
+
+### Option A: Docker Compose (Recommended)
+Clone the repository and spin up the complete isolated stack:
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd house-price-prediction
+git clone https://github.com/tuta699/house-price-prediction.git
+cd "House Price Prediction"
 
-# Run both backend and frontend
-start.bat
+# Launch both services in background
+docker compose up -d
 ```
+- Open **Frontend Workspace**: [http://localhost:3000](http://localhost:3000)
+- Verify **Backend API Health**: [http://localhost:8080/health](http://localhost:8080/health)
 
-This opens two terminals:
-- 🔧 Backend API → `http://localhost:8080`
-- 🎨 Frontend UI → `http://localhost:3000`
+### Option B: Local Development
 
----
-
-### 🔧 Manual Setup
-
-<details>
-<summary><b>Option 1: Run Full Stack Application</b></summary>
-
-#### Terminal 1 - Backend
+#### 1. Backend API (Python 3.11)
 ```bash
 cd backend
+python -m venv venv
+# Windows:
+.\venv\Scripts\Activate.ps1
+# Linux / macOS:
+source venv/bin/activate
+
 pip install -r requirements_api.txt
 python app.py
 ```
 
-#### Terminal 2 - Frontend
+#### 2. Frontend Application (Next.js 16)
 ```bash
 cd frontend
-npm install
+npm install --legacy-peer-deps
 npm run dev
 ```
 
-**Access:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
+---
 
-</details>
+## 🐳 Docker Containerization & CIDR Security
 
-<details>
-<summary><b>Option 2: Run with npm (Concurrent)</b></summary>
+### RFC 1918 CIDR Subnet Architecture
+The system avoids Docker's unmanaged default bridge (`172.17.0.0/16`) by declaring an isolated, user-defined bridge network ([`propval-custom-bridge`](docker-compose.yml)):
+- **CIDR Block**: `172.28.0.0/16`
+- **Default Gateway**: `172.28.0.1`
+- **ML API Static IP**: `172.28.0.10`
+- **Web UI Static IP**: `172.28.0.20`
+- **Loopback Protection**: Host bindings are restricted to `127.0.0.1` to prevent WAN/LAN firewall bypasses.
 
-```bash
-# Install concurrently
-npm install
-
-# Run both servers
-npm run dev
-```
-
-</details>
-
-<details>
-<summary><b>Option 3: Docker Deployment</b></summary>
-
-```bash
-cd backend
-docker-compose up -d
-
-# Test
-curl http://localhost:8080/health
-
-# Stop
-docker-compose down
-```
-
-</details>
-
-<details>
-<summary><b>Option 4: Jupyter Notebooks Only</b></summary>
-
-```bash
-cd backend
-pip install -r requirements.txt
-jupyter notebook advanced_house_price_prediction.ipynb
-```
-
-</details>
-
-## 📈 Workflow Steps
-
-### 1. Environment Setup
-- Import libraries
-- Set random seed for reproducibility
-- Configure visualization settings
-
-### 2. Data Loading
-- Fetch California Housing dataset
-- Convert to pandas DataFrame
-- Display basic information
-
-### 3. Data Cleaning & EDA
-- Check for missing values
-- Detect and analyze outliers
-- Generate descriptive statistics
-- Create correlation heatmap
-- Visualize feature distributions
-- Plot relationships with target variable
-
-### 4. Feature Engineering
-- Analyze multicollinearity
-- Select relevant features
-- Drop redundant variables (AveBedrms)
-- Define feature matrix (X) and target vector (y)
-
-### 5. Train/Test Split
-- 80/20 split ratio
-- Stratified sampling
-- Preserve data distribution
-
-### 6. Model Training
-- Initialize Linear Regression
-- Fit model on training data
-- Extract coefficients and intercept
-
-### 7. Model Evaluation
-- Calculate RMSE and R² scores
-- Compare train vs test performance
-- Generate prediction plots
-- Analyze residuals
-
-### 8. Coefficient Interpretation
-- Explain feature impacts
-- Identify most influential predictors
-- Translate coefficients to dollar values
-
-### 9. Model Persistence
-- Save model using joblib
-- Demonstrate model loading
-- Verify loaded model accuracy
-
-### 10. Example Predictions
-- Create realistic house profiles
-- Generate predictions
-- Visualize results
-
-### 11. Summary & Recommendations
-- Summarize findings
-- Suggest improvements
-- Discuss production considerations
-
-## 📊 Model Performance
-
-<div align="center">
-
-### 🎯 Advanced Models Performance
-
-| Model | Test R² | Test RMSE | Improvement | Status |
-|-------|---------|-----------|-------------|--------|
-| **🏆 Ensemble** | **0.84** | **$48K** | **+40%** | ✅ Best |
-| 🌲 Random Forest | 0.83 | $49K | +38% | ✅ Excellent |
-| 📈 Gradient Boosting | 0.82 | $50K | +37% | ✅ Excellent |
-| 📐 Ridge Regression | 0.65 | $70K | +8% | ⚠️ Good |
-| 📏 Linear Regression | 0.60 | $73K | Baseline | ℹ️ Baseline |
-
-</div>
-
-**Key Insights:**
-- 🎯 **84% accuracy** - Model explains 84% of house price variance
-- 💰 **$48K error** - Average prediction error (vs $73K baseline)
-- 📈 **40% improvement** - Over baseline Linear Regression
-- ⚡ **Production-ready** - Optimized with hyperparameter tuning
-
-## 🔑 Key Features
-
-### Machine Learning
-- **7 Algorithms Compared**: Linear, Ridge, Lasso, ElasticNet, Decision Tree, Random Forest, Gradient Boosting
-- **Advanced Feature Engineering**: 9 new features (ratios, categories, interactions)
-- **Hyperparameter Tuning**: GridSearchCV optimization
-- **Cross-Validation**: 5-fold CV for robust evaluation
-- **Ensemble Methods**: Voting regressor combining best models
-- **Feature Importance**: Analysis of most influential predictors
-
-### Production Features
-- **REST API**: Flask-based with 4 endpoints
-- **Input Validation**: Comprehensive data validation
-- **Error Handling**: Graceful error responses
-- **Logging**: Request and error logging
-- **Health Checks**: Monitoring endpoints
-- **Batch Predictions**: Process multiple houses at once
-
-### Deployment
-- **Docker Support**: Containerized deployment
-- **Docker Compose**: Multi-container orchestration
-- **Cloud Ready**: Guides for AWS, GCP, Azure, Heroku
-- **Scalable**: Gunicorn with multiple workers
-- **Monitoring**: Health checks and logging
-
-## 🎯 Recommended Improvements
-
-1. **Advanced Models**: XGBoost, LightGBM, CatBoost
-2. **Deep Learning**: Neural networks for complex patterns
-3. **Explainability**: SHAP values for model interpretability
-4. **Feature Selection**: Recursive feature elimination
-5. **Time Series**: Incorporate temporal trends
-6. **External Data**: Add economic indicators, crime rates
-7. **A/B Testing**: Compare model versions in production
-8. **Auto-Retraining**: Automated model update pipeline
-
-## 📡 API Documentation
-
-### Endpoints
-
-#### 🏥 Health Check
-```bash
-GET /health
-```
-
-**Response:**
-```json
-{
-  "status": "healthy",
-  "model_loaded": true,
-  "metadata": {
-    "metrics": {...}
-  }
-}
-```
-
-#### 🔮 Single Prediction
-```bash
-POST /predict
-Content-Type: application/json
-```
-
-**Request:**
-```json
-{
-  "MedInc": 8.5,
-  "HouseAge": 15,
-  "AveRooms": 7.5,
-  "AveBedrms": 1.2,
-  "Population": 1200,
-  "AveOccup": 2.5,
-  "Latitude": 37.88,
-  "Longitude": -122.23
-}
-```
-
-**Response:**
-```json
-{
-  "prediction_value": 4.526,
-  "currency": "USD",
-  "scale": "100,000s",
-  "input_received": {...}
-}
-```
-
-### 💻 Code Examples
-
-<details>
-<summary><b>Python</b></summary>
-
-```python
-import requests
-
-url = "http://localhost:8080/predict"
-data = {
-    "MedInc": 8.5,
-    "HouseAge": 15,
-    "AveRooms": 7.5,
-    "AveBedrms": 1.2,
-    "Population": 1200,
-    "AveOccup": 2.5,
-    "Latitude": 37.88,
-    "Longitude": -122.23
-}
-
-response = requests.post(url, json=data)
-result = response.json()
-print(f"Predicted Price: ${result['prediction_value'] * 100000:,.0f}")
-```
-
-</details>
-
-<details>
-<summary><b>JavaScript/TypeScript</b></summary>
-
-```typescript
-const response = await fetch('http://localhost:8080/predict', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    MedInc: 8.5,
-    HouseAge: 15,
-    AveRooms: 7.5,
-    AveBedrms: 1.2,
-    Population: 1200,
-    AveOccup: 2.5,
-    Latitude: 37.88,
-    Longitude: -122.23
-  })
-});
-
-const data = await response.json();
-console.log(`Predicted Price: $${data.prediction_value * 100000}`);
-```
-
-</details>
-
-<details>
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Quick Start for Contributors
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+### Container Security Checklist
+- [x] **Non-Root Execution**: Backend runs as `appuser` (`UID 10001`); Frontend runs as `nextjs` (`UID 10001`).
+- [x] **Immutable Read-Only Filesystem**: Container root is mounted read-only (`--read-only`).
+- [x] **In-Memory Scratch Space**: `/tmp` is mounted via tmpfs (`size=64m,noexec,nosuid`).
+- [x] **Linux Capability Dropping**: Drops all 38 capabilities (`--cap-drop ALL`).
+- [x] **No New Privileges**: Prevents privilege escalation (`no-new-privileges:true`).
+- [x] **Resource Quotas**: Hard-capped at 2.0 CPUs and 1024MB RAM.
 
 ---
 
-## 📄 Documentation
+## 📡 REST API Reference
 
-- [📖 README](README.md) - Project overview and setup
-- [📝 CHANGELOG](CHANGELOG.md) - Version history
-- [🤝 CONTRIBUTING](CONTRIBUTING.md) - Contribution guidelines
-- [🔒 SECURITY](SECURITY.md) - Security policy
-- [⚖️ LICENSE](LICENSE) - MIT License
-- [🎨 Frontend README](frontend/README.md) - Frontend documentation
+### `POST /predict`
+Generates an algorithmic appraisal for a census block group.
 
----b></summary>
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend
-pip install pytest pytest-cov
-pytest --cov=. --cov-report=html
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm run lint
-npm run build
-```
-
-### Run All Tests
-```bash
-# Backend
-cd backend && pytest
-
-# Frontend
-cd frontend && npm run lint && npm run build
-```
-
----
+#### cURL Example:
 ```bash
 curl -X POST http://localhost:8080/predict \
   -H "Content-Type: application/json" \
   -d '{
     "MedInc": 8.5,
-    "HouseAge": 15,
-    "AveRooms": 7.5,
-    "AveBedrms": 1.2,
-    "Population": 1200,
-    "AveOccup": 2.5,
-    "Latitude": 37.88,
-    "Longitude": -122.23
+    "HouseAge": 18,
+    "AveRooms": 6.8,
+    "AveBedrms": 1.1,
+    "Population": 1400,
+    "AveOccup": 2.7,
+    "Latitude": 37.85,
+    "Longitude": -122.25
   }'
 ```
 
-</details>
-
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
-- Additional ML algorithms (XGBoost, LightGBM)
-- Model explainability (SHAP, LIME)
-- Web UI for predictions
-- Real-time monitoring dashboard
-- Automated testing suite
-- CI/CD pipeline
-
-## 📄 License
-
-This project is open-source and available for educational and commercial use.
-
-## 👤 Author
-
-Senior ML Engineering Team
-
-## 📧 Contact
-
-For questions, feedback, or collaboration:
-- Open an issue in the repository
-- Email: [your-email]
-- LinkedIn: [your-profile]
+#### Response:
+```json
+{
+  "currency": "USD",
+  "prediction_value": 3.55823,
+  "scale": "100,000s",
+  "input_received": {
+    "MedInc": 8.5,
+    "HouseAge": 18,
+    "AveRooms": 6.8,
+    "AveBedrms": 1.1,
+    "Population": 1400,
+    "AveOccup": 2.7,
+    "Latitude": 37.85,
+    "Longitude": -122.25
+  }
+}
+```
 
 ---
 
-## 🎓 Learning Outcomes
+## 📁 Repository Structure
 
-This project demonstrates:
-- ✅ End-to-end ML pipeline development
-- ✅ Multiple algorithm comparison and selection
-- ✅ Advanced feature engineering techniques
-- ✅ Hyperparameter tuning and cross-validation
-- ✅ REST API development with Flask
-- ✅ Docker containerization
-- ✅ Cloud deployment strategies
-- ✅ Production ML best practices
-- ✅ Model monitoring and maintenance
-
-**Perfect for:**
-- Data Science portfolios
-- ML Engineering interviews
-- Production ML learning
-- Academic projects
-- Startup MVPs
+```
+House Price Prediction/
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── workflows/
+│       └── ci.yml
+├── backend/
+│   ├── models/
+│   │   ├── final_pipeline.pkl
+│   │   └── metadata.pkl
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   ├── app.py
+│   ├── preprocessing.py
+│   └── requirements_api.txt
+├── frontend/
+│   ├── app/
+│   │   ├── dashboard/page.tsx
+│   │   ├── developer/page.tsx
+│   │   ├── history/page.tsx
+│   │   ├── predict/page.tsx
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── AppHeader.tsx
+│   │   ├── AppSidebar.tsx
+│   │   └── Icons.tsx
+│   ├── lib/
+│   │   └── types.ts
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   ├── next.config.ts
+│   └── package.json
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── DOCKER_HUB_README.md
+├── LICENSE
+├── README.md
+├── SECURITY.md
+├── docker-compose.yml
+├── docker-push.bat
+└── docker-push.sh
+```
 
 ---
 
-<div align="center">
+## 📜 Community & Governance
 
-## 🌟 Show Your Support
-
-If you find this project helpful, please consider giving it a ⭐!
-
-### 📬 Contact
-
-**Questions or feedback?** Feel free to reach out!
-
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourprofile)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your.email@example.com)
+This project adheres to professional open-source governance standards:
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Contributor Covenant v2.1.
+- **[Contributing Guide](CONTRIBUTING.md)**: Setup, git branch naming, conventional commits, and verification.
+- **[Security Policy](SECURITY.md)**: Vulnerability disclosure and defense-in-depth architecture.
+- **[Changelog](CHANGELOG.md)**: Semantic version history following Keep a Changelog.
+- **[License](LICENSE)**: MIT License.
 
 ---
 
-**Last Updated:** March 6, 2026  
-**Version:** 2.0.0 (Production-Ready)
+## 👤 Author & Maintainer
 
-Made by Letera Tujo
-
-</div>
+**Letera Tujo**
+- **Docker Hub**: [@tuta699](https://hub.docker.com/u/tuta699)
+- **GitHub**: [@tuta699](https://github.com/tuta699)
+- **Project**: PropVal AI — California Real Estate Valuation Engine
